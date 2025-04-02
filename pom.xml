@@ -6,7 +6,25 @@
 
     <groupId>com.clinexa</groupId>
     <artifactId>DiagnosisBase</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <name>Clinexa DiagnosisBase</name>
+    <version>0.1-BETA.1</version>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License Version 3</name>
+            <url>https://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>nikita</id>
+            <name>Nikita Serba A.</name>
+            <email>nikitaserba@icloud.com</email>
+            <timezone>EET</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
