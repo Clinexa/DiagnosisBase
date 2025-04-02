@@ -15,12 +15,5 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.utils.DiagnosisLanguage;
-
-public interface DiagnosisEntity {
-
-    String getICDCode(ICDVersion version);
-
-    DiagnosisEntityDescription getDescription(DiagnosisLanguage language);
-
+public interface DiagnosisEntityDescription {
 }

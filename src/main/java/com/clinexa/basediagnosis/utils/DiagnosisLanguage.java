@@ -13,7 +13,20 @@
  * License along with Clinexa DiagnosisBase. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.clinexa.basediagnosis.systems.utils;
+package com.clinexa.basediagnosis.utils;
 
-public enum ICD11Languages {
+public enum DiagnosisLanguage {
+    ARABIC,
+    CHINESE,
+    CZECH,
+    ENGLISH,
+    FRENCH,
+    KAZAKH,
+    PORTUGUESE,
+    RUSSIAN,
+    SLOVAK,
+    SPANISH,
+    SWEDISH,
+    TURKISH,
+    UZBEK
 }
