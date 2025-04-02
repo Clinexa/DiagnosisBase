@@ -15,5 +15,5 @@
 
 package com.clinexa.basediagnosis;
 
-public class DiagnosisDescription {
+public class DiagnosisDescription implements DiagnosisEntityDescription {
 }
