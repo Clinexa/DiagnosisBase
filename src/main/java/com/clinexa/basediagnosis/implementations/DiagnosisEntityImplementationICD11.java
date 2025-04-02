@@ -4,6 +4,8 @@ import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
 import com.clinexa.basediagnosis.descriptors.DescriptionHandler;
 
+import java.util.Objects;
+
 public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHandler> implements DiagnosisEntity {
 
     String ICD11Code;
@@ -29,5 +31,16 @@ public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHa
     @Override
     public T getDescriptionHandler() {
         return descriptionHandler;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DiagnosisEntityImplementationICD11<?> that)) return false;
+        return Objects.equals(getICD11Code(), that.getICD11Code());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getICD11Code());
     }
 }
