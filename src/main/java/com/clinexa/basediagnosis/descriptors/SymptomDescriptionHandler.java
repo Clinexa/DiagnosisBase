@@ -15,12 +15,12 @@
 
 package com.clinexa.basediagnosis.descriptors;
 
-import com.clinexa.basediagnosis.SymtomDescription;
+import com.clinexa.basediagnosis.SymptomDescription;
 import com.clinexa.basediagnosis.utils.DiagnosisLanguage;
 
 @FunctionalInterface
 public interface SymptomDescriptionHandler extends DescriptionHandler {
 
-    SymtomDescription retrieveDescription(DiagnosisLanguage language);
+    SymptomDescription retrieveDescription(DiagnosisLanguage language);
 
 }
