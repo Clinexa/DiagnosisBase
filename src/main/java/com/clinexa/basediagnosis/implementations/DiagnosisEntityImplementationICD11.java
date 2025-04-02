@@ -2,14 +2,14 @@ package com.clinexa.basediagnosis.implementations;
 
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
-import com.clinexa.basediagnosis.descriptors.DiagnosisDescriptionHandler;
+import com.clinexa.basediagnosis.descriptors.DescriptionHandler;
 
-public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEntity {
+public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHandler> implements DiagnosisEntity {
 
     String ICD11Code;
-    DiagnosisDescriptionHandler descriptionHandler;
+    T descriptionHandler;
 
-    public DiagnosisEntityImplementationICD11(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
+    public DiagnosisEntityImplementationICD11(String ICD11Code, T descriptionHandler) {
         this.ICD11Code = ICD11Code;
         this.descriptionHandler = descriptionHandler;
     }
@@ -27,7 +27,7 @@ public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEnt
     }
 
     @Override
-    public DiagnosisDescriptionHandler getDescriptionHandler() {
+    public T getDescriptionHandler() {
         return descriptionHandler;
     }
 }

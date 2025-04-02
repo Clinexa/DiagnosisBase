@@ -20,7 +20,7 @@ import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationIC
 
 import java.util.List;
 
-public class Diagnosis extends DiagnosisEntityImplementationICD11 {
+public class Diagnosis extends DiagnosisEntityImplementationICD11<DiagnosisDescriptionHandler> {
     public Diagnosis(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
         super(ICD11Code, descriptionHandler);
     }

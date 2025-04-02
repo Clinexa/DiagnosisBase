@@ -15,11 +15,11 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.descriptors.DiagnosisDescriptionHandler;
+import com.clinexa.basediagnosis.descriptors.SymptomDescriptionHandler;
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
 
-public class Symptom extends DiagnosisEntityImplementationICD11 {
-    public Symptom(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
+public class Symptom extends DiagnosisEntityImplementationICD11<SymptomDescriptionHandler> {
+    public Symptom(String ICD11Code, SymptomDescriptionHandler descriptionHandler) {
         super(ICD11Code, descriptionHandler);
     }
 }
