@@ -16,31 +16,17 @@
 package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.descriptors.DiagnosisDescriptionHandler;
+import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
 
-public class Diagnosis implements DiagnosisEntity {
+import java.util.List;
 
-    String ICD11Code;
-    DiagnosisDescriptionHandler descriptionHandler;
-
+public class Diagnosis extends DiagnosisEntityImplementationICD11 {
     public Diagnosis(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
-        this.ICD11Code = ICD11Code;
-        this.descriptionHandler = descriptionHandler;
+        super(ICD11Code, descriptionHandler);
     }
 
-    public String getICD11Code() {
-        return ICD11Code;
-    }
-
-    @Override
-    public String getICDCode(ICDVersion version) {
-        if (version == ICDVersion.ICD11)
-            return ICD11Code;
-        else
-            throw new UnsupportedOperationException("Unsupported ICD version: " + version.toString());
-    }
-
-    @Override
-    public DiagnosisDescriptionHandler getDescriptionHandler() {
-        return descriptionHandler;
+    public List<Symptom> getSymptoms() {
+        throw new UnsupportedOperationException("Not supported yet with ICD 11 as the only database");
+        // TODO: Loader where modules can save symptomps per diagnosis
     }
 }
