@@ -15,5 +15,32 @@
 
 package com.clinexa.basediagnosis;
 
-public class Diagnosis {
+import com.clinexa.basediagnosis.descriptors.DiagnosisDescriptionHandler;
+
+public class Diagnosis implements DiagnosisEntity {
+
+    String ICD11Code;
+    DiagnosisDescriptionHandler descriptionHandler;
+
+    public Diagnosis(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
+        this.ICD11Code = ICD11Code;
+        this.descriptionHandler = descriptionHandler;
+    }
+
+    public String getICD11Code() {
+        return ICD11Code;
+    }
+
+    @Override
+    public String getICDCode(ICDVersion version) {
+        if (version == ICDVersion.ICD11)
+            return ICD11Code;
+        else
+            throw new UnsupportedOperationException("Unsupported ICD version: " + version.toString());
+    }
+
+    @Override
+    public DiagnosisDescriptionHandler getDescriptionHandler() {
+        return descriptionHandler;
+    }
 }
