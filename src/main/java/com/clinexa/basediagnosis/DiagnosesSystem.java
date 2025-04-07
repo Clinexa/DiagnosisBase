@@ -15,12 +15,12 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.systems.ICD11DiagnosisSystem;
+import com.clinexa.basediagnosis.systems.ICD11DiagnosesSystem;
 
 public interface DiagnosesSystem {
 
     static DiagnosesSystem getDefaultDiagnosesSystem() {
-        return new ICD11DiagnosisSystem();
+        return new ICD11DiagnosesSystem();
     }
 
     DiagnosisEntity getByICD11Code(String icd11Code);
