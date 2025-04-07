@@ -16,21 +16,25 @@ public class TestTokenManager {
                 return (DataForToken) stream.readObject();
             }
         } else {
-            Scanner scanner = new Scanner(System.in);
-            System.out.print("Enter client ID: ");
-            String clientID = scanner.nextLine();
-            System.out.print("Enter client secret: ");
-            String clientSecret = scanner.nextLine();
+            throw new RuntimeException("Token file does not exist. Create it with main function for this file!");
+        }
+    }
 
-            DataForToken dataForToken = new DataForToken();
-            dataForToken.setClientID(clientID);
-            dataForToken.setClientSecret(clientSecret);
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter client ID: ");
+        String clientID = scanner.nextLine();
+        System.out.print("Enter client secret: ");
+        String clientSecret = scanner.nextLine();
 
-            try (var stream = new ObjectOutputStream(new FileOutputStream(TEST_TOKEN_FILE.toFile()))) {
-                stream.writeObject(dataForToken);
-            }
+        DataForToken dataForToken = new DataForToken();
+        dataForToken.setClientID(clientID);
+        dataForToken.setClientSecret(clientSecret);
 
-            return dataForToken;
+        //noinspection ResultOfMethodCallIgnored
+        TEST_TOKEN_FILE.getParent().toFile().mkdirs();
+        try (var stream = new ObjectOutputStream(new FileOutputStream(TEST_TOKEN_FILE.toFile()))) {
+            stream.writeObject(dataForToken);
         }
     }
 
