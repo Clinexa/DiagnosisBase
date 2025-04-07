@@ -16,6 +16,7 @@
 package com.clinexa.basediagnosis.systems;
 
 import com.clinexa.basediagnosis.DiagnosesSystem;
+import com.clinexa.basediagnosis.Diagnosis;
 import com.clinexa.basediagnosis.DiagnosisCategoryListing;
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
@@ -104,5 +105,25 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Override
     public void setParameter(String key, String value) {
         data.put(key, value);
+    }
+
+    private JSONObject getAPIResponse(URI apiURI, ICD11Language language) {
+        try (var client = HttpClient.newHttpClient()) {
+            HttpRequest.Builder builder = HttpRequest.newBuilder();
+            builder.uri(API_URI.resolve(apiURI));
+            builder.GET();
+            builder.setHeader("Authorization", "Bearer " + data.get(CLIENT_ID_KEY));
+            builder.setHeader("Accept", "application/json");
+            builder.setHeader("Accept-Language", language.getCode());
+            builder.setHeader("API-Version", "v2");
+
+            HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != HttpURLConnection.HTTP_OK)
+                throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
+
+            return new JSONObject(response.body());
+        } catch (Exception e) {
+            throw new DiagnosesSystemException(e);
+        }
     }
 }
