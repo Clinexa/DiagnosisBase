@@ -15,5 +15,7 @@
 
 package com.clinexa.basediagnosis.systems;
 
-public class ICD11DiagnosisSystem {
+import com.clinexa.basediagnosis.DiagnosesSystem;
+
+public class ICD11DiagnosisSystem implements DiagnosesSystem {
 }
