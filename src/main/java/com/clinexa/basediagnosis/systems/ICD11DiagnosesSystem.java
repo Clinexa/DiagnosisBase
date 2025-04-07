@@ -16,7 +16,6 @@
 package com.clinexa.basediagnosis.systems;
 
 import com.clinexa.basediagnosis.DiagnosesSystem;
-import com.clinexa.basediagnosis.Diagnosis;
 import com.clinexa.basediagnosis.DiagnosisCategoryListing;
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
@@ -36,8 +35,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     private Map<String, String> data;
 
-    public final String CLIENT_ID_KEY = "CLIEND_ID";
-    public final String CLIENT_SECRET_KEY = "CLIENT_SECRET";
+    public static final String CLIENT_ID_KEY = "CLIEND_ID";
+    public static final String CLIENT_SECRET_KEY = "CLIENT_SECRET";
 
     private final String CLIENT_TOKEN_KEY = "CLIENT_TOKEN";
 
@@ -94,6 +93,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     @Override
     public DiagnosisCategoryListing getParentCategoryListing() {
+        JSONObject apiResponse = getAPIResponse(URI.create("/entity"), ICD11Language.ENGLISH);
         return null;
     }
 
