@@ -25,4 +25,7 @@ public interface DiagnosesSystem {
 
     DiagnosisEntity getByICD11Code(String icd11Code);
 
+    DiagnosisCategoryListing getParentCategoryListing();
+    DiagnosisCategoryListing getCategoryListing(String category);
+
 }
