@@ -43,4 +43,11 @@ public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHa
     public int hashCode() {
         return Objects.hashCode(getICD11Code());
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+                "ICD11Code='" + ICD11Code + '\'' +
+                '}';
+    }
 }
