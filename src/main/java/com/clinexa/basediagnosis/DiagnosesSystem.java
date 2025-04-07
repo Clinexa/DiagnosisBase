@@ -28,4 +28,8 @@ public interface DiagnosesSystem {
     DiagnosisCategoryListing getParentCategoryListing();
     DiagnosisCategoryListing getCategoryListing(String category);
 
+    void setParameter(String key, String value);
+
+    void init();
+
 }
