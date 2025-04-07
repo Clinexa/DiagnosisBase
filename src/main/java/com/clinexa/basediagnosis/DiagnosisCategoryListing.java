@@ -11,18 +11,18 @@ public class DiagnosisCategoryListing {
     }
 
     private ListingValue type;
-    private List<DiagnosisCategoryListing> categories;
+    private List<String> categories;
     private List<Diagnosis> diagnoses;
     private List<Symptom> symptoms;
 
-    private DiagnosisCategoryListing(ListingValue type, List<DiagnosisCategoryListing> categories, List<Diagnosis> diagnoses, List<Symptom> symptoms) {
+    private DiagnosisCategoryListing(ListingValue type, List<String> categories, List<Diagnosis> diagnoses, List<Symptom> symptoms) {
         this.type = type;
         this.categories = categories;
         this.diagnoses = diagnoses;
         this.symptoms = symptoms;
     }
 
-    public static DiagnosisCategoryListing makeCategoriesList(List<DiagnosisCategoryListing> categories) {
+    public static DiagnosisCategoryListing makeCategoriesList(List<String> categories) {
         return new DiagnosisCategoryListing(ListingValue.CATEGORIES, categories, null, null);
     }
 
@@ -38,7 +38,7 @@ public class DiagnosisCategoryListing {
         return type;
     }
 
-    public List<DiagnosisCategoryListing> getCategories() {
+    public List<String> getCategories() {
         return categories;
     }
 
