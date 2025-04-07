@@ -19,8 +19,10 @@ import com.clinexa.basediagnosis.systems.ICD11DiagnosisSystem;
 
 public interface DiagnosesSystem {
 
-    public static DiagnosesSystem getDefaultDiagnosesSystem() {
+    static DiagnosesSystem getDefaultDiagnosesSystem() {
         return new ICD11DiagnosisSystem();
     }
+
+    DiagnosisEntity getByICD11Code(String icd11Code);
 
 }
