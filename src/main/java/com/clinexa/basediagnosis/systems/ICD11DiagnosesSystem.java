@@ -97,7 +97,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     @Override
     public DiagnosisEntity getByICD11Code(String icd11Code) {
-        return null;
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
@@ -136,6 +136,11 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             }
         }
         return subcategories;
+    }
+
+    @Override
+    public List<Map.Entry<String, String>> getSearchResult(String query) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override
