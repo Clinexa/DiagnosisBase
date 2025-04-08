@@ -76,7 +76,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                             "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +
                             "&scope=" + URLEncoder.encode(SCOPE, StandardCharsets.UTF_8) +
                             "&grant_type=" + URLEncoder.encode(GRANT_TYPE, StandardCharsets.UTF_8);
-            builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters));
+            builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters, StandardCharsets.UTF_8));
+            builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
             HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != HttpURLConnection.HTTP_OK)
@@ -164,7 +165,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             HttpRequest.Builder builder = HttpRequest.newBuilder();
             builder.uri(API_URI.resolve(apiURI));
             builder.GET();
-            builder.setHeader("Authorization", "Bearer " + data.get(CLIENT_ID_KEY));
+            builder.setHeader("Authorization", "Bearer " + data.get(CLIENT_TOKEN_KEY));
             builder.setHeader("Accept", "application/json");
             builder.setHeader("Accept-Language", language.getCode());
             builder.setHeader("API-Version", "v2");
