@@ -1,11 +1,17 @@
 package com.clinexa.basediagnosis.systems;
 
 
+import com.clinexa.basediagnosis.Diagnosis;
+import com.clinexa.basediagnosis.DiagnosisCategory;
+import com.clinexa.basediagnosis.Symptom;
 import com.clinexa.basediagnosis.systems.misc.DataForToken;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,12 +36,39 @@ class ICD11DiagnosesSystemTest {
 
     @Test
     void getParentCategoryListing() {
-        throw new UnsupportedOperationException("Not implemented jet");
+        List<Map.Entry<Object, String>> list = system.getParentCategoryListing();
+
+        testAllCorrectClasses(list);
+        assertFalse(list.isEmpty());
     }
 
     @Test
-    @Disabled("Not implemented jet")
-    void getCategoryListing() {
-        throw new UnsupportedOperationException("Not implemented jet");
+    void getCategoryListingAllCategories() {
+        testAllTheSame("588616678", DiagnosisCategory.class);  // Gastroenteritis or colitis of infectious origin
+    }
+
+    @Test
+    void getCategoryListingAllDiagnoses() {
+        testAllTheSame("344162786", Diagnosis.class);  // 1A03 Intestinal infections due to Escherichia coli
+    }
+
+    @Test
+    void getCategoryListingAllSymptoms() {
+        testAllTheSame("1907420475", Symptom.class);  // Fear of cancer
+    }
+
+    void testAllTheSame(String category, Class<?> classType) {
+        List<Map.Entry<Object, String>> list = system.getCategoryListing(category);
+        for (Map.Entry<Object, String> entry : list) {
+            assertInstanceOf(classType, entry.getKey());
+        }
+        assertFalse(list.isEmpty());
+    }
+
+    void testAllCorrectClasses(List<Map.Entry<Object, String>> list) {
+        for (Map.Entry<Object, String> entry : list) {
+            Object key = entry.getKey();
+            assertTrue((key instanceof DiagnosisCategory) || (key instanceof Diagnosis) || (key instanceof System));
+        }
     }
 }
