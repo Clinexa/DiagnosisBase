@@ -119,7 +119,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Override
     public List<Map.Entry<Object, String>> getCategoryListing(String category) {
         JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), ICD11Language.ENGLISH);
-        if (!apiResponse.has("category"))
+        if (!apiResponse.has("child"))
             throw new DiagnosesSystemException("Given entity is not a category: " + category);
         JSONArray children = apiResponse.getJSONArray("child");
 
