@@ -161,6 +161,11 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     }
 
     private JSONObject getAPIResponse(URI apiURI, ICD11Language language) {
+        return getAPIResponse(apiURI, language, new HashMap<>());
+    }
+
+    private JSONObject getAPIResponse(URI apiURI, ICD11Language language, Map<String, String> headers) {
+        assert !apiURI.toString().startsWith("/");
         try (var client = HttpClient.newHttpClient()) {
             HttpRequest.Builder builder = HttpRequest.newBuilder();
             builder.uri(API_URI.resolve(apiURI));
@@ -169,6 +174,9 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             builder.setHeader("Accept", "application/json");
             builder.setHeader("Accept-Language", language.getCode());
             builder.setHeader("API-Version", "v2");
+            for (Map.Entry<String, String> header : headers.entrySet()) {
+                builder.setHeader(header.getKey(), header.getValue());
+            }
 
             HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == HttpsURLConnection.HTTP_NOT_FOUND)
