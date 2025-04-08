@@ -138,6 +138,27 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         return subcategories;
     }
 
+    @Override
+    public List<Map.Entry<Object, String>> getSearchResult(String query) {
+        try {
+            String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
+            JSONObject response = getAPIResponse(new URI(queryForURI), ICD11Language.ENGLISH);
+            JSONArray responsesArray = response.getJSONArray("destinationEntities");
+
+            List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
+            for (Object obj : responsesArray) {
+                JSONObject destinationEntity = (JSONObject) obj;
+                String entityID = destinationEntity.getString("stemId");
+                entityID = entityID.substring(entityID.indexOf("mms") + 4);
+                JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), ICD11Language.ENGLISH);
+                subcategories.add(createPairByResponse(destinationEntityResponse, entityID));
+            }
+            return subcategories;
+        } catch (URISyntaxException e) {
+            throw new DiagnosesSystemException(e);
+        }
+    }
+
     private Map.Entry<Object, String> processChild(String childURI) {
         String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
         String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
@@ -161,11 +182,6 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     private String formQuery(String category) {
         return "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms" + (category.isEmpty() ? "" : "/" + category);
-    }
-
-    @Override
-    public List<Map.Entry<String, String>> getSearchResult(String query) {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override

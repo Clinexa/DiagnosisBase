@@ -30,7 +30,7 @@ public interface DiagnosesSystem {
 
     List<Map.Entry<Object, String>> getParentCategoryListing();
     List<Map.Entry<Object, String>> getCategoryListing(String category);
-    List<Map.Entry<String, String>> getSearchResult(String query);
+    List<Map.Entry<Object, String>> getSearchResult(String query);
 
     void setParameter(String key, String value);
 
