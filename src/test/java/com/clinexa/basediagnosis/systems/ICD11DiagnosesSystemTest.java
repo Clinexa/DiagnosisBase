@@ -8,6 +8,7 @@ import com.clinexa.basediagnosis.Symptom;
 import com.clinexa.basediagnosis.systems.misc.DataForToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.opentest4j.TestAbortedException;
 
 
 import java.util.List;
@@ -22,7 +23,12 @@ class ICD11DiagnosesSystemTest {
     @BeforeEach
     void setUp() throws Exception{
         system = new ICD11DiagnosesSystem();
-        DataForToken dataForToken = TestTokenManager.getDataForToken();
+        DataForToken dataForToken;
+        try {
+            dataForToken = TestTokenManager.getDataForToken();
+        } catch (RuntimeException e) {
+            throw new TestAbortedException("Skipped due to no token been found.");
+        }
         system.setParameter(ICD11DiagnosesSystem.CLIENT_ID_KEY, dataForToken.getClientID());
         system.setParameter(ICD11DiagnosesSystem.CLIENT_SECRET_KEY, dataForToken.getClientSecret());
         system.init();
