@@ -5,7 +5,6 @@ import com.clinexa.basediagnosis.Diagnosis;
 import com.clinexa.basediagnosis.DiagnosisCategory;
 import com.clinexa.basediagnosis.Symptom;
 import com.clinexa.basediagnosis.systems.misc.DataForToken;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -29,9 +28,32 @@ class ICD11DiagnosesSystemTest {
     }
 
     @Test
-    @Disabled("Not implemented jet")
-    void getByICD11Code() {
-        throw new UnsupportedOperationException("Not implemented jet");
+    void getByICD11CodeSymptom() {
+        String CODE1 = "MG24.01";
+        Object breastCancerFearObj = system.getByICD11Code(CODE1);
+        assertInstanceOf(Symptom.class, breastCancerFearObj);
+        Symptom breastCancerFear = (Symptom) breastCancerFearObj;
+        assertEquals(CODE1, breastCancerFear.getICD11Code());
+        assertEquals("Fear of breast cancer female", breastCancerFear.getTitle());
+    }
+
+    @Test
+    void getByICD11CodeDiagnosis() {
+        String CODE1 = "1A40.0";
+        Object diagnosisObj = system.getByICD11Code(CODE1);
+        assertInstanceOf(Diagnosis.class, diagnosisObj);
+        Diagnosis diagnosis = (Diagnosis) diagnosisObj;
+        assertEquals(CODE1, diagnosis.getICD11Code());
+        assertEquals("Gastroenteritis or colitis without specification of origin", diagnosis.getTitle());
+    }
+
+    @Test
+    void getByICD11CodeCategory() {
+        String CODE1 = "1A40";
+        Object categoryObj = system.getByICD11Code(CODE1);
+        assertInstanceOf(DiagnosisCategory.class, categoryObj);
+        DiagnosisCategory category = (DiagnosisCategory) categoryObj;
+        assertEquals("Gastroenteritis or colitis without specification of infectious agent", category.getName());
     }
 
     @Test
