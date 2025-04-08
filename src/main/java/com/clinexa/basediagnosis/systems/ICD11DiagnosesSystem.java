@@ -171,6 +171,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             builder.setHeader("API-Version", "v2");
 
             HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == HttpsURLConnection.HTTP_NOT_FOUND)
+                throw new DiagnosesSystemException("ICD API Not found: " + apiURI.toString());
             if (response.statusCode() != HttpURLConnection.HTTP_OK)
                 throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
 
