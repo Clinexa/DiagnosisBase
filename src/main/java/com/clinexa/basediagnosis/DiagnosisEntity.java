@@ -15,12 +15,8 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.descriptors.DescriptionHandler;
-
 public interface DiagnosisEntity {
 
     String getICDCode(ICDVersion version);
-
-    DescriptionHandler getDescriptionHandler();
 
 }

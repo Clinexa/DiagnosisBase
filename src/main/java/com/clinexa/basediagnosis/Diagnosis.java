@@ -15,14 +15,13 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.descriptors.DiagnosisDescriptionHandler;
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
 
 import java.util.List;
 
-public class Diagnosis extends DiagnosisEntityImplementationICD11<DiagnosisDescriptionHandler> {
-    public Diagnosis(String ICD11Code, DiagnosisDescriptionHandler descriptionHandler) {
-        super(ICD11Code, descriptionHandler);
+public class Diagnosis extends DiagnosisEntityImplementationICD11 {
+    public Diagnosis(String ICD11Code) {
+        super(ICD11Code);
     }
 
     public List<Symptom> getSymptoms() {

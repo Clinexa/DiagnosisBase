@@ -3,20 +3,17 @@ package com.clinexa.basediagnosis.implementations;
 import com.clinexa.basediagnosis.DiagnosesSystem;
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
-import com.clinexa.basediagnosis.descriptors.DescriptionHandler;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
-public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHandler> implements DiagnosisEntity, Serializable {
+public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEntity, Serializable {
 
     String ICD11Code;
-    T descriptionHandler;
 
-    public DiagnosisEntityImplementationICD11(String ICD11Code, T descriptionHandler) {
+    public DiagnosisEntityImplementationICD11(String ICD11Code) {
         this.ICD11Code = ICD11Code;
-        this.descriptionHandler = descriptionHandler;
     }
 
     public String getICD11Code() {
@@ -32,13 +29,8 @@ public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHa
     }
 
     @Override
-    public T getDescriptionHandler() {
-        return descriptionHandler;
-    }
-
-    @Override
     public boolean equals(Object o) {
-        if (!(o instanceof DiagnosisEntityImplementationICD11<?> that)) return false;
+        if (!(o instanceof DiagnosisEntityImplementationICD11 that)) return false;
         return Objects.equals(getICD11Code(), that.getICD11Code());
     }
 
@@ -65,7 +57,5 @@ public abstract class DiagnosisEntityImplementationICD11<T extends DescriptionHa
             InvocationTargetException, InstantiationException, IllegalAccessException {
         in.defaultReadObject();
         ICD11Code = (String) in.readObject();
-        DiagnosesSystem system = DiagnosesSystem.getDefaultDiagnosesSystem().getClass().getDeclaredConstructor().newInstance();
-        descriptionHandler = (T) system.getByICD11Code(ICD11Code).getDescriptionHandler();
     }
 }
