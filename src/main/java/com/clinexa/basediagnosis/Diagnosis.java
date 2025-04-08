@@ -20,8 +20,8 @@ import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationIC
 import java.util.List;
 
 public class Diagnosis extends DiagnosisEntityImplementationICD11 {
-    public Diagnosis(String ICD11Code) {
-        super(ICD11Code);
+    public Diagnosis(String ICD11Code, String title) {
+        super(ICD11Code, title);
     }
 
     public List<Symptom> getSymptoms() {

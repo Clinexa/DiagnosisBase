@@ -18,7 +18,7 @@ package com.clinexa.basediagnosis;
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
 
 public class Symptom extends DiagnosisEntityImplementationICD11 {
-    public Symptom(String ICD11Code) {
-        super(ICD11Code);
+    public Symptom(String ICD11Code, String title) {
+        super(ICD11Code, title);
     }
 }

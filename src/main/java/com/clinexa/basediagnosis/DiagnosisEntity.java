@@ -18,5 +18,5 @@ package com.clinexa.basediagnosis;
 public interface DiagnosisEntity {
 
     String getICDCode(ICDVersion version);
-
+    String getTitle();
 }

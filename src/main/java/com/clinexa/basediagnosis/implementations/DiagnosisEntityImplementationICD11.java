@@ -11,9 +11,11 @@ import java.util.Objects;
 public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEntity, Serializable {
 
     String ICD11Code;
+    String title;
 
-    public DiagnosisEntityImplementationICD11(String ICD11Code) {
+    public DiagnosisEntityImplementationICD11(String ICD11Code, String title) {
         this.ICD11Code = ICD11Code;
+        this.title = title;
     }
 
     public String getICD11Code() {
@@ -26,6 +28,11 @@ public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEnt
             return ICD11Code;
         else
             throw new UnsupportedOperationException("Unsupported ICD version: " + version.toString());
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
     }
 
     @Override
