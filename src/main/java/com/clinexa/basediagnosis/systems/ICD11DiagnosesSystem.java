@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -60,40 +61,49 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Override
     public void init() {
         try (var client = HttpClient.newHttpClient();) {
-            if (!data.containsKey(CLIENT_ID_KEY) && !data.containsKey(CLIENT_SECRET_KEY))
-                throw new DiagnosesSystemException("Information for WHO authentication was not given. Set " +
-                        "ICD11DiagnosesSystem.CLIENT_ID_KEY and .CLIENT_ID_KEY using setParameter() method!");
-            String clientID = data.get(CLIENT_ID_KEY);
-            String clientSecret = data.get(CLIENT_SECRET_KEY);
-
-            HttpRequest.Builder builder = HttpRequest.newBuilder();
-            final String TOKEN_ENPOINT = "https://icdaccessmanagement.who.int/connect/token";
-            final String SCOPE = "icdapi_access";
-            final String GRANT_TYPE = "client_credentials";
-            builder.uri(URI.create(TOKEN_ENPOINT));
-            String urlParameters =
-                    "client_id=" + URLEncoder.encode(clientID, StandardCharsets.UTF_8) +
-                            "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +
-                            "&scope=" + URLEncoder.encode(SCOPE, StandardCharsets.UTF_8) +
-                            "&grant_type=" + URLEncoder.encode(GRANT_TYPE, StandardCharsets.UTF_8);
-            builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters, StandardCharsets.UTF_8));
-            builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != HttpURLConnection.HTTP_OK)
-                throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
-
-            var responseObj = new JSONObject(response.body());
-            if (!responseObj.has("access_token"))
-                throw new DiagnosesSystemException("Response doesn't contain access token: " + response.body());
-            setParameter(CLIENT_TOKEN_KEY, responseObj.getString("access_token"));
-
-            JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), ICD11Language.ENGLISH);
-            String releaseName = releaseResponse.getString("latestRelease").replace("http://id.who.int/icd/release/11/", "").replace("/mms", "");
-            setParameter(LATEST_RELEASE_NAME_KEY, releaseName);
-        } catch (Exception e) {
+            initToken(client);
+            initRelease();
+        } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new DiagnosesSystemException(e);
         }
+    }
+
+    private void initToken(HttpClient client) throws IOException, InterruptedException {
+        if (!data.containsKey(CLIENT_ID_KEY) && !data.containsKey(CLIENT_SECRET_KEY))
+            throw new DiagnosesSystemException("Information for WHO authentication was not given. Set " +
+                    "ICD11DiagnosesSystem.CLIENT_ID_KEY and .CLIENT_ID_KEY using setParameter() method!");
+        String clientID = data.get(CLIENT_ID_KEY);
+        String clientSecret = data.get(CLIENT_SECRET_KEY);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder();
+        final String TOKEN_ENPOINT = "https://icdaccessmanagement.who.int/connect/token";
+        final String SCOPE = "icdapi_access";
+        final String GRANT_TYPE = "client_credentials";
+        builder.uri(URI.create(TOKEN_ENPOINT));
+        String urlParameters =
+                "client_id=" + URLEncoder.encode(clientID, StandardCharsets.UTF_8) +
+                        "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8) +
+                        "&scope=" + URLEncoder.encode(SCOPE, StandardCharsets.UTF_8) +
+                        "&grant_type=" + URLEncoder.encode(GRANT_TYPE, StandardCharsets.UTF_8);
+        builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters, StandardCharsets.UTF_8));
+        builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != HttpURLConnection.HTTP_OK)
+            throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
+
+        var responseObj = new JSONObject(response.body());
+        if (!responseObj.has("access_token"))
+            throw new DiagnosesSystemException("Response doesn't contain access token: " + response.body());
+        setParameter(CLIENT_TOKEN_KEY, responseObj.getString("access_token"));
+    }
+
+    private void initRelease() throws URISyntaxException {
+        JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), ICD11Language.ENGLISH);
+        if (!releaseResponse.has("latestRelease"))
+            throw new DiagnosesSystemException("Response doesn't contain latest release: " + releaseResponse);
+        String releaseName = releaseResponse.getString("latestRelease").replace("http://id.who.int/icd/release/11/", "").replace("/mms", "");
+        setParameter(LATEST_RELEASE_NAME_KEY, releaseName);
     }
 
     @Override
@@ -108,35 +118,37 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     @Override
     public List<Map.Entry<Object, String>> getCategoryListing(String category) {
-        String query = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms" + (category.isEmpty() ? "" : "/" + category);
-        JSONObject apiResponse = getAPIResponse(URI.create(query), ICD11Language.ENGLISH);
+        JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), ICD11Language.ENGLISH);
+        if (!apiResponse.has("category"))
+            throw new DiagnosesSystemException("Given entity is not a category: " + category);
         JSONArray children = apiResponse.getJSONArray("child");
+
         List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
         for (Object childURI : children) {
-            try {
-                String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
-                String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
-                JSONObject childResponse = getAPIResponse(URI.create(childQuery), ICD11Language.ENGLISH);
-                getObjectType(childResponse, childEntity);
-                switch (getObjectType(childResponse, childEntity)) {
-                    case CATEGORY:
-                        String name = childResponse.getJSONObject("title").getString("@value");
-                        subcategories.add(new AbstractMap.SimpleEntry<>(new DiagnosisCategory(name, childEntity), childEntity));
-                        break;
-                    case DIAGNOSIS:
-                        subcategories.add(new AbstractMap.SimpleEntry<>(new Diagnosis(childResponse.getString("code")), childEntity));
-                        break;
-                    case SYMPTOM:
-                        subcategories.add(new AbstractMap.SimpleEntry<>(new Symptom(childResponse.getString("code")), childEntity));
-                        break;
-                    default:
-                        throw new UnsupportedOperationException("Unsupported category: " + childEntity);
-                }
-            } catch (Exception e) {
-                throw new DiagnosesSystemException(e);
-            }
+            subcategories.add(processChild((String) childURI));
         }
         return subcategories;
+    }
+
+    private Map.Entry<Object, String> processChild(String childURI) {
+        String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
+        String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
+        JSONObject childResponse = getAPIResponse(URI.create(childQuery), ICD11Language.ENGLISH);
+        return createPairByResponse(childResponse, childEntity);
+    }
+
+    private Map.Entry<Object, String> createPairByResponse(JSONObject childResponse, String childEntity) {
+        Object object = switch (getObjectType(childResponse)) {
+            case CATEGORY -> new DiagnosisCategory(childResponse.getJSONObject("title").getString("@value"), childEntity);
+            case DIAGNOSIS -> new Diagnosis(childResponse.getString("code"));
+            case SYMPTOM -> new Symptom(childResponse.getString("code"));
+            default -> throw new UnsupportedOperationException("Unsupported category: " + childEntity);
+        };
+        return new AbstractMap.SimpleEntry<>(object, childEntity);
+    }
+
+    private String formQuery(String category) {
+        return "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms" + (category.isEmpty() ? "" : "/" + category);
     }
 
     @Override
@@ -149,7 +161,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         data.put(key, value);
     }
 
-    private EntityType getObjectType(JSONObject object, String entityID) throws URISyntaxException {
+    private EntityType getObjectType(JSONObject object) {
         if (object.has("child"))
             return EntityType.CATEGORY;
 
