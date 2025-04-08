@@ -17,6 +17,9 @@ package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.systems.ICD11DiagnosesSystem;
 
+import java.util.List;
+import java.util.Map;
+
 public interface DiagnosesSystem {
 
     static DiagnosesSystem getDefaultDiagnosesSystem() {
@@ -25,8 +28,9 @@ public interface DiagnosesSystem {
 
     DiagnosisEntity getByICD11Code(String icd11Code);
 
-    DiagnosisCategoryListing getParentCategoryListing();
-    DiagnosisCategoryListing getCategoryListing(String category);
+    List<Map.Entry<Object, String>> getParentCategoryListing();
+    List<Map.Entry<Object, String>> getCategoryListing(String category);
+    List<Map.Entry<String, String>> getSearchResult(String query);
 
     void setParameter(String key, String value);
 
