@@ -107,8 +107,16 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     }
 
     @Override
-    public DiagnosisEntity getByICD11Code(String icd11Code) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public Object getByICD11Code(String icd11Code) {
+        try {
+            JSONObject response = getAPIResponse(new URI(formQuery("") + "/codeinfo/" + icd11Code), ICD11Language.ENGLISH);
+            String entityID = response.getString("stemId");
+            entityID = entityID.substring(entityID.indexOf("mms") + 4);
+            JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), ICD11Language.ENGLISH);
+            return createPairByResponse(codeResponse, entityID).getKey();
+        } catch (URISyntaxException e) {
+            throw new DiagnosesSystemException(e);
+        }
     }
 
     @Override
@@ -139,12 +147,16 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     private Map.Entry<Object, String> createPairByResponse(JSONObject childResponse, String childEntity) {
         Object object = switch (getObjectType(childResponse)) {
-            case CATEGORY -> new DiagnosisCategory(childResponse.getJSONObject("title").getString("@value"), childEntity);
-            case DIAGNOSIS -> new Diagnosis(childResponse.getString("code"));
-            case SYMPTOM -> new Symptom(childResponse.getString("code"));
+            case CATEGORY -> new DiagnosisCategory(getTitle(childResponse), childEntity);
+            case DIAGNOSIS -> new Diagnosis(childResponse.getString("code"), getTitle(childResponse));
+            case SYMPTOM -> new Symptom(childResponse.getString("code"), getTitle(childResponse));
             default -> throw new UnsupportedOperationException("Unsupported category: " + childEntity);
         };
         return new AbstractMap.SimpleEntry<>(object, childEntity);
+    }
+
+    private String getTitle(JSONObject response) {
+        return response.getJSONObject("title").getString("@value");
     }
 
     private String formQuery(String category) {

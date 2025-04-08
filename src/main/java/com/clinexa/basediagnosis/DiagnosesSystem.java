@@ -26,7 +26,7 @@ public interface DiagnosesSystem {
         return new ICD11DiagnosesSystem();
     }
 
-    DiagnosisEntity getByICD11Code(String icd11Code);
+    Object getByICD11Code(String icd11Code);
 
     List<Map.Entry<Object, String>> getParentCategoryListing();
     List<Map.Entry<Object, String>> getCategoryListing(String category);
