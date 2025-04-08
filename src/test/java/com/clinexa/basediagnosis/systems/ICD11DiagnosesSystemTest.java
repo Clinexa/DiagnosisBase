@@ -1,6 +1,7 @@
 package com.clinexa.basediagnosis.systems;
 
 
+import com.clinexa.basediagnosis.DiagnosesSystem;
 import com.clinexa.basediagnosis.Diagnosis;
 import com.clinexa.basediagnosis.DiagnosisCategory;
 import com.clinexa.basediagnosis.Symptom;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ICD11DiagnosesSystemTest {
 
-    private ICD11DiagnosesSystem system;
+    private DiagnosesSystem system;
 
     @BeforeEach
     void setUp() throws Exception{
@@ -77,6 +78,14 @@ class ICD11DiagnosesSystemTest {
     @Test
     void getCategoryListingAllSymptoms() {
         testAllTheSame("1907420475", Symptom.class);  // Fear of cancer
+    }
+
+    @Test
+    void testSearch() {
+        List<Map.Entry<Object, String>> result = system.getSearchResult("Bipolar type I disorder manic");
+
+        assertFalse(result.isEmpty());
+        testAllCorrectClasses(result);
     }
 
     void testAllTheSame(String category, Class<?> classType) {
