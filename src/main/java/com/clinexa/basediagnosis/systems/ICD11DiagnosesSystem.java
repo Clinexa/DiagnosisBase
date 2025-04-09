@@ -65,11 +65,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public ICD11DiagnosesSystem() {
         data = new HashMap<String, String>();
-        try {
-            API_URI = new URI(API_URL_STRING);
-        } catch (Exception e) {
-            throw new DiagnosesSystemException(e);
-        }
+        API_URI = formURI(API_URL_STRING);
     }
 
     @Override
@@ -77,7 +73,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         try (var client = HttpClient.newHttpClient();) {
             initToken(client);
             initRelease(language);
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+        } catch (IOException | InterruptedException e) {
             throw new DiagnosesSystemException(e);
         }
     }
@@ -114,8 +110,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         setParameter(CLIENT_TOKEN_KEY, responseObj.getString("access_token"));
     }
 
-    private void initRelease(ICDLanguage language) throws URISyntaxException {
-        JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), language);
+    private void initRelease(ICDLanguage language) {
+        JSONObject releaseResponse = getAPIResponse(formURI("release/11/mms"), language);
         if (!releaseResponse.has("latestRelease"))
             throw new DiagnosesSystemException("Response doesn't contain latest release: " + releaseResponse);
         String releaseName = releaseResponse.getString("latestRelease").replace("http://id.who.int/icd/release/11/", "").replace("/mms", "");
@@ -124,15 +120,11 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     @Override
     public Object getByICD11Code(String icd11Code, ICDLanguage language) {
-        try {
-            JSONObject response = getAPIResponse(new URI(formQuery("") + "/codeinfo/" + icd11Code), language);
-            String entityID = response.getString("stemId");
-            entityID = entityID.substring(entityID.indexOf("mms") + 4);
-            JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), language);
-            return createPairByResponse(codeResponse, entityID, language).getKey();
-        } catch (URISyntaxException e) {
-            throw new DiagnosesSystemException(e);
-        }
+        JSONObject response = getAPIResponse(formURI(formQuery("") + "/codeinfo/" + icd11Code), language);
+        String entityID = response.getString("stemId");
+        entityID = entityID.substring(entityID.indexOf("mms") + 4);
+        JSONObject codeResponse = getAPIResponse(formURI(formQuery(entityID)), language);
+        return createPairByResponse(codeResponse, entityID, language).getKey();
     }
 
     @Override
@@ -156,34 +148,26 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     @Override
     public List<Map.Entry<Object, String>> getSearchResult(String query, ICDLanguage language) {
-        try {
-            String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
-            JSONObject response = getAPIResponse(new URI(queryForURI), language);
-            JSONArray responsesArray = response.getJSONArray("destinationEntities");
+        String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
+        JSONObject response = getAPIResponse(formURI(queryForURI), language);
+        JSONArray responsesArray = response.getJSONArray("destinationEntities");
 
-            List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
-            for (Object obj : responsesArray) {
-                JSONObject destinationEntity = (JSONObject) obj;
-                String entityID = destinationEntity.getString("stemId");
-                entityID = entityID.substring(entityID.indexOf("mms") + 4);
-                JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), language);
-                subcategories.add(createPairByResponse(destinationEntityResponse, entityID, language));
-            }
-            return subcategories;
-        } catch (URISyntaxException e) {
-            throw new DiagnosesSystemException(e);
+        List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
+        for (Object obj : responsesArray) {
+            JSONObject destinationEntity = (JSONObject) obj;
+            String entityID = destinationEntity.getString("stemId");
+            entityID = entityID.substring(entityID.indexOf("mms") + 4);
+            JSONObject destinationEntityResponse = getAPIResponse(formURI(formQuery(entityID)), language);
+            subcategories.add(createPairByResponse(destinationEntityResponse, entityID, language));
         }
+        return subcategories;
     }
 
     @Override
     public Titled getTitleByEntityID(String entity, ICDLanguage language) {
-        try {
-            JSONObject response = getAPIResponse(new URI(formQuery(entity)), language);
-            String title = response.getJSONObject("title").getString("@value");
-            return new TitledImplementation(title, language, (var _) -> { throw new UnsupportedOperationException("getTitleByEntityID result may asked only in original language");});
-        } catch (URISyntaxException e) {
-            throw new DiagnosesSystemException(e);
-        }
+        JSONObject response = getAPIResponse(formURI(formQuery(entity)), language);
+        String title = response.getJSONObject("title").getString("@value");
+        return new TitledImplementation(title, language, (var _) -> { throw new UnsupportedOperationException("getTitleByEntityID result may asked only in original language");});
     }
 
     @Override
@@ -244,6 +228,14 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Override
     public void setParameter(String key, String value) {
         data.put(key, value);
+    }
+
+    private URI formURI(String query) {
+        try {
+            return new URI(query);
+        } catch (URISyntaxException e) {
+            throw new DiagnosesSystemException(e);
+        }
     }
 
     private EntityType getObjectType(JSONObject object) {
