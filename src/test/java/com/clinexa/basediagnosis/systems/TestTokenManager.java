@@ -16,7 +16,12 @@ public class TestTokenManager {
                 return (DataForToken) stream.readObject();
             }
         } else {
-            throw new RuntimeException("Token file does not exist. Create it with main function for this file!");
+            String id = System.getenv("CLINEXA_CLIENT_ID");
+            String secret = System.getenv("CLINEXA_CLIENT_SECRET");
+            if (id != null && secret != null)
+                return new DataForToken(id, secret);
+            else
+                throw new RuntimeException("Token file does not exist. Create it with main function for this file!");
         }
     }
 
