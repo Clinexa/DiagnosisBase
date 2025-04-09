@@ -32,6 +32,8 @@ import java.util.*;
 
 public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
+    private ICDLanguage language = ICDLanguage.ENGLISH;
+
     private Map<String, String> data;
 
     public static final String CLIENT_ID_KEY = "CLIEND_ID";
@@ -63,7 +65,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     public void init() {
         try (var client = HttpClient.newHttpClient();) {
             initToken(client);
-            initRelease();
+            initRelease(language);
         } catch (IOException | InterruptedException | URISyntaxException e) {
             throw new DiagnosesSystemException(e);
         }
@@ -99,8 +101,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         setParameter(CLIENT_TOKEN_KEY, responseObj.getString("access_token"));
     }
 
-    private void initRelease() throws URISyntaxException {
-        JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), ICDLanguage.ENGLISH);
+    private void initRelease(ICDLanguage language) throws URISyntaxException {
+        JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), language);
         if (!releaseResponse.has("latestRelease"))
             throw new DiagnosesSystemException("Response doesn't contain latest release: " + releaseResponse);
         String releaseName = releaseResponse.getString("latestRelease").replace("http://id.who.int/icd/release/11/", "").replace("/mms", "");
@@ -108,12 +110,12 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     }
 
     @Override
-    public Object getByICD11Code(String icd11Code) {
+    public Object getByICD11Code(String icd11Code, ICDLanguage language) {
         try {
-            JSONObject response = getAPIResponse(new URI(formQuery("") + "/codeinfo/" + icd11Code), ICDLanguage.ENGLISH);
+            JSONObject response = getAPIResponse(new URI(formQuery("") + "/codeinfo/" + icd11Code), language);
             String entityID = response.getString("stemId");
             entityID = entityID.substring(entityID.indexOf("mms") + 4);
-            JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), ICDLanguage.ENGLISH);
+            JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), language);
             return createPairByResponse(codeResponse, entityID).getKey();
         } catch (URISyntaxException e) {
             throw new DiagnosesSystemException(e);
@@ -121,13 +123,13 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     }
 
     @Override
-    public List<Map.Entry<Object, String>> getParentCategoryListing() {
-        return getCategoryListing("");
+    public List<Map.Entry<Object, String>> getParentCategoryListing(ICDLanguage language) {
+        return getCategoryListing("", language);
     }
 
     @Override
-    public List<Map.Entry<Object, String>> getCategoryListing(String category) {
-        JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), ICDLanguage.ENGLISH);
+    public List<Map.Entry<Object, String>> getCategoryListing(String category, ICDLanguage language) {
+        JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), language);
         if (!apiResponse.has("child"))
             throw new DiagnosesSystemException("Given entity is not a category: " + category);
         JSONArray children = apiResponse.getJSONArray("child");
@@ -140,10 +142,10 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     }
 
     @Override
-    public List<Map.Entry<Object, String>> getSearchResult(String query) {
+    public List<Map.Entry<Object, String>> getSearchResult(String query, ICDLanguage language) {
         try {
             String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
-            JSONObject response = getAPIResponse(new URI(queryForURI), ICDLanguage.ENGLISH);
+            JSONObject response = getAPIResponse(new URI(queryForURI), language);
             JSONArray responsesArray = response.getJSONArray("destinationEntities");
 
             List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
@@ -151,7 +153,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                 JSONObject destinationEntity = (JSONObject) obj;
                 String entityID = destinationEntity.getString("stemId");
                 entityID = entityID.substring(entityID.indexOf("mms") + 4);
-                JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), ICDLanguage.ENGLISH);
+                JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), language);
                 subcategories.add(createPairByResponse(destinationEntityResponse, entityID));
             }
             return subcategories;
@@ -160,10 +162,35 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         }
     }
 
-    private Map.Entry<Object, String> processChild(String childURI) {
+    @Override
+    public Object getByICD11Code(String icd11Code) {
+        return getByICD11Code(icd11Code, language);
+    }
+
+    @Override
+    public List<Map.Entry<Object, String>> getParentCategoryListing() {
+        return getParentCategoryListing(language);
+    }
+
+    @Override
+    public List<Map.Entry<Object, String>> getCategoryListing(String category) {
+        return getCategoryListing(category, language);
+    }
+
+    @Override
+    public List<Map.Entry<Object, String>> getSearchResult(String query) {
+        return getSearchResult(query, language);
+    }
+
+    @Override
+    public void setLanguage(ICDLanguage language) {
+        this.language = language;
+    }
+
+    private Map.Entry<Object, String> processChild(String childURI, ICDLanguage language) {
         String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
         String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
-        JSONObject childResponse = getAPIResponse(URI.create(childQuery), ICDLanguage.ENGLISH);
+        JSONObject childResponse = getAPIResponse(URI.create(childQuery), language);
         return createPairByResponse(childResponse, childEntity);
     }
 
