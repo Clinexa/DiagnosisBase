@@ -19,4 +19,7 @@ public interface DiagnosisEntity {
 
     String getICDCode(ICDVersion version);
     String getTitle();
+    default String getICD11Code() {
+        return getICDCode(ICDVersion.ICD11);
+    }
 }
