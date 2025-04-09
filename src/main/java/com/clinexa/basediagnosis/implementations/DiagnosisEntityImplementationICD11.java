@@ -9,6 +9,7 @@ import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public abstract class DiagnosisEntityImplementationICD11 extends TitledImplementation implements DiagnosisEntity, Serializable {
@@ -20,6 +21,10 @@ public abstract class DiagnosisEntityImplementationICD11 extends TitledImplement
         super(title, language, (var lang) -> ((Titled) system.getByICD11Code(ICD11Code, lang)).getTitle(lang));
         this.system = system;
         this.ICD11Code = ICD11Code;
+    }
+
+    public DiagnosisEntityImplementationICD11() {
+        super();
     }
 
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
@@ -60,14 +65,12 @@ public abstract class DiagnosisEntityImplementationICD11 extends TitledImplement
 
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
         out.writeObject(ICD11Code);
     }
 
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, InstantiationException, IllegalAccessException {
-        in.defaultReadObject();
         ICD11Code = (String) in.readObject();
 
         DiagnosesSystem defaultSystem = DiagnosesSystem.getDefaultDiagnosesSystem();

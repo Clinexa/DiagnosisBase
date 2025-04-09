@@ -15,6 +15,8 @@ public class TitledImplementation implements Titled {
         this.anotherLanguageGetter = anotherLanguageGetter;
     }
 
+    public TitledImplementation() {}
+
     @Override
     public final String getTitle(ICDLanguage language) {
         if (this.language == language)

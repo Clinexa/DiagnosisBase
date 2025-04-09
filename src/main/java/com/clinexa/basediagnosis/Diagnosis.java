@@ -25,6 +25,10 @@ public class Diagnosis extends DiagnosisEntityImplementationICD11 {
         super(system, language, ICD11Code, title);
     }
 
+    public Diagnosis() {
+        super();
+    }
+
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public Diagnosis(String ICD11Code, String title) {
         super(ICD11Code, title);

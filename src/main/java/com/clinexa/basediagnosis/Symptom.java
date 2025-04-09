@@ -23,6 +23,10 @@ public class Symptom extends DiagnosisEntityImplementationICD11 {
         super(system, language, ICD11Code, title);
     }
 
+    public Symptom() {
+        super();
+    }
+
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public Symptom(String ICD11Code, String title) {
         super(ICD11Code, title);
