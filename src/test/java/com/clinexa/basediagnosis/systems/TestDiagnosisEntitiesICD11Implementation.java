@@ -65,4 +65,13 @@ public class TestDiagnosisEntitiesICD11Implementation {
         assertEquals(diagnosis.getTitle(ICDLanguage.RUSSIAN), diagnosisFromStream.getTitle(ICDLanguage.RUSSIAN));
     }
 
+    @Test
+    void testDiagnosisInequality() {
+        Diagnosis diagnosis1 = (Diagnosis) system.getByICD11Code("1A40.0");
+        Diagnosis diagnosis2 = (Diagnosis) system.getByICD11Code("1A40.Z");
+
+        assertNotEquals(diagnosis1, diagnosis2);
+        assertNotEquals(diagnosis1.hashCode(), diagnosis2.hashCode());  // I hope they aren't equal
+    }
+
 }
