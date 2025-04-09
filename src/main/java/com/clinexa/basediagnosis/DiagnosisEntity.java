@@ -15,13 +15,10 @@
 
 package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.utils.ICDLanguage;
-
-public interface DiagnosisEntity {
+public interface DiagnosisEntity extends Titled {
 
     String getICDCode(ICDVersion version);
     default String getICD11Code() {
         return getICDCode(ICDVersion.ICD11);
     }
-    String getTitle(ICDLanguage language);
 }

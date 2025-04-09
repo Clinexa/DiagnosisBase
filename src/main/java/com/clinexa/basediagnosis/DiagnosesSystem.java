@@ -16,6 +16,7 @@
 package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.systems.ICD11DiagnosesSystem;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 import java.util.List;
 import java.util.Map;
@@ -26,11 +27,19 @@ public interface DiagnosesSystem {
         return new ICD11DiagnosesSystem();
     }
 
-    Object getByICD11Code(String icd11Code);
+    void setLanguage(ICDLanguage language);
 
+    Object getByICD11Code(String icd11Code);
     List<Map.Entry<Object, String>> getParentCategoryListing();
     List<Map.Entry<Object, String>> getCategoryListing(String category);
     List<Map.Entry<Object, String>> getSearchResult(String query);
+    Titled getTitleByEntityID(String entity);
+
+    Object getByICD11Code(String icd11Code, ICDLanguage language);
+    List<Map.Entry<Object, String>> getParentCategoryListing(ICDLanguage language);
+    List<Map.Entry<Object, String>> getCategoryListing(String category, ICDLanguage language);
+    List<Map.Entry<Object, String>> getSearchResult(String query, ICDLanguage language);
+    Titled getTitleByEntityID(String entity, ICDLanguage language);
 
     void setParameter(String key, String value);
 

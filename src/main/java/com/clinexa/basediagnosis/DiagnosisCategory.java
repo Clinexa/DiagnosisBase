@@ -15,18 +15,26 @@
 
 package com.clinexa.basediagnosis;
 
-public class DiagnosisCategory {
+import com.clinexa.basediagnosis.implementations.TitledImplementation;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
 
-    private String name;
+public class DiagnosisCategory extends TitledImplementation {
+
     private String systemCode;
 
-    public DiagnosisCategory(String name, String systemCode) {
-        this.name = name;
+    public DiagnosisCategory(String name, String systemCode, ICDLanguage language, DiagnosesSystem system) {
+        super(name, language, (var lang) -> system.getTitleByEntityID(systemCode, lang).getTitle(lang));
         this.systemCode = systemCode;
     }
 
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
+    public DiagnosisCategory(String name, String systemCode) {
+        this(name, systemCode, ICDLanguage.ENGLISH, DiagnosesSystem.getDefaultDiagnosesSystem());
+    }
+
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public String getName() {
-        return name;
+        return getTitle(language);
     }
 
     public String getSystemCode() {

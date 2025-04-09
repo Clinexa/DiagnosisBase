@@ -3,19 +3,27 @@ package com.clinexa.basediagnosis.implementations;
 import com.clinexa.basediagnosis.DiagnosesSystem;
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
+import com.clinexa.basediagnosis.Titled;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 
-public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEntity, Serializable {
+public abstract class DiagnosisEntityImplementationICD11 extends TitledImplementation implements DiagnosisEntity, Serializable {
 
+    DiagnosesSystem system;
     String ICD11Code;
-    String title;
 
-    public DiagnosisEntityImplementationICD11(String ICD11Code, String title) {
+    public DiagnosisEntityImplementationICD11(DiagnosesSystem system, ICDLanguage language, String ICD11Code, String title) {
+        super(title, language, (var lang) -> ((Titled) system.getByICD11Code(ICD11Code, lang)).getTitle(lang));
+        this.system = system;
         this.ICD11Code = ICD11Code;
-        this.title = title;
+    }
+
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
+    public DiagnosisEntityImplementationICD11(String ICD11Code, String title) {
+        this(DiagnosesSystem.getDefaultDiagnosesSystem(), ICDLanguage.ENGLISH, ICD11Code, title);
     }
 
     @Override
@@ -29,11 +37,6 @@ public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEnt
             return ICD11Code;
         else
             throw new UnsupportedOperationException("Unsupported ICD version: " + version.toString());
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
     }
 
     @Override

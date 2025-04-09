@@ -16,8 +16,14 @@
 package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 public class Symptom extends DiagnosisEntityImplementationICD11 {
+    public Symptom(DiagnosesSystem system, ICDLanguage language, String ICD11Code, String title) {
+        super(system, language, ICD11Code, title);
+    }
+
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public Symptom(String ICD11Code, String title) {
         super(ICD11Code, title);
     }
