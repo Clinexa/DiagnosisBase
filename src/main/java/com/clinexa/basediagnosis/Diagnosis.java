@@ -16,9 +16,13 @@
 package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
+import com.clinexa.basediagnosis.services.SymptomSupplier;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 
+import java.nio.file.ProviderNotFoundException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class Diagnosis extends DiagnosisEntityImplementationICD11 {
     public Diagnosis(DiagnosesSystem system, ICDLanguage language, String ICD11Code, String title) {
@@ -35,7 +39,11 @@ public class Diagnosis extends DiagnosisEntityImplementationICD11 {
     }
 
     public List<Symptom> getSymptoms() {
-        throw new UnsupportedOperationException("Not supported yet with ICD 11 as the only database");
-        // TODO: Loader where modules can save symptomps per diagnosis
+        ServiceLoader<SymptomSupplier> loader = ServiceLoader.load(SymptomSupplier.class);
+        for (SymptomSupplier symptomSupplier : loader) {
+            if (symptomSupplier.canProcess(this))
+                return symptomSupplier.process(this);
+        }
+        throw new ProviderNotFoundException("No symptom provider for diagnosis: " + this);
     }
 }

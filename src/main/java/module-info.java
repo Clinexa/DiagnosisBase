@@ -9,4 +9,5 @@ module DiagnosisBase {
     exports com.clinexa.basediagnosis.services;
 
     uses com.clinexa.basediagnosis.services.ICDCodeConverter;
+    uses com.clinexa.basediagnosis.services.SymptomSupplier;
 }
