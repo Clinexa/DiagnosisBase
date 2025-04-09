@@ -17,6 +17,7 @@ package com.clinexa.basediagnosis.systems;
 
 import com.clinexa.basediagnosis.*;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
+import com.clinexa.basediagnosis.implementations.TitledImplementation;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -136,7 +137,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
 
         List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
         for (Object childURI : children) {
-            subcategories.add(processChild((String) childURI));
+            subcategories.add(processChild((String) childURI, language));
         }
         return subcategories;
     }
@@ -157,6 +158,17 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                 subcategories.add(createPairByResponse(destinationEntityResponse, entityID));
             }
             return subcategories;
+        } catch (URISyntaxException e) {
+            throw new DiagnosesSystemException(e);
+        }
+    }
+
+    @Override
+    public Titled getTitleByEntityID(String entity, ICDLanguage language) {
+        try {
+            JSONObject response = getAPIResponse(new URI(formQuery(entity)), language);
+            String title = response.getJSONObject("title").getString("@value");
+            return new TitledImplementation(title, language, (var _) -> { throw new UnsupportedOperationException("getTitleByEntityID result may asked only in original language");});
         } catch (URISyntaxException e) {
             throw new DiagnosesSystemException(e);
         }
@@ -185,6 +197,11 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     @Override
     public void setLanguage(ICDLanguage language) {
         this.language = language;
+    }
+
+    @Override
+    public Titled getTitleByEntityID(String entity) {
+        return getTitleByEntityID(entity, language);
     }
 
     private Map.Entry<Object, String> processChild(String childURI, ICDLanguage language) {
