@@ -1,0 +1,6 @@
+module:DiagnosisBase
+com.clinexa.basediagnosis
+com.clinexa.basediagnosis.exceptions
+com.clinexa.basediagnosis.services
+com.clinexa.basediagnosis.systems
+com.clinexa.basediagnosis.utils

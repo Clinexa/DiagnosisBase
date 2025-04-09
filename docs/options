@@ -1,0 +1,34 @@
+--class-path
+'/Users/nikita/.m2/repository/org/json/json/20250107/json-20250107.jar:/Users/nikita/.m2/repository/org/jetbrains/annotations/26.0.2/annotations-26.0.2.jar'
+--module-path
+'/Users/nikita/Projects/Clinexa/DiagnosisBase/target/classes'
+-encoding
+'UTF-8'
+-protected
+-source
+'23'
+-sourcepath
+'/Users/nikita/Projects/Clinexa/DiagnosisBase/src/main/java'
+-subpackages
+com.clinexa
+-author
+-bottom
+'Copyright &#169; 2025. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/nikita/Projects/Clinexa/DiagnosisBase/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Clinexa DiagnosisBase 0.1-DEV.1 API'
+-tag
+"apiNote:a:API Note:"
+-tag
+"implSpec:a:Implementation Requirements:"
+-tag
+"implNote:a:Implementation Note:"
+-use
+-version
+-windowtitle
+'Clinexa DiagnosisBase 0.1-DEV.1 API'
