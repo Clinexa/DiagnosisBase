@@ -18,6 +18,7 @@ public abstract class DiagnosisEntityImplementationICD11 implements DiagnosisEnt
         this.title = title;
     }
 
+    @Override
     public String getICD11Code() {
         return ICD11Code;
     }
