@@ -5,12 +5,16 @@ import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
 import com.clinexa.basediagnosis.Titled;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
+import com.clinexa.basediagnosis.services.ICDCodeConverter;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.ProviderNotFoundException;
+import java.util.Iterator;
 import java.util.Objects;
+import java.util.ServiceLoader;
 
 public abstract class DiagnosisEntityImplementationICD11 extends TitledImplementation implements DiagnosisEntity, Serializable {
 
@@ -39,10 +43,19 @@ public abstract class DiagnosisEntityImplementationICD11 extends TitledImplement
 
     @Override
     public String getICDCode(ICDVersion version) {
-        if (version == ICDVersion.ICD11)
+        if (version == ICDVersion.ICD11) {
             return ICD11Code;
-        else
-            throw new UnsupportedOperationException("Unsupported ICD version: " + version.toString());
+        } else {
+            ServiceLoader<ICDCodeConverter> loader = ServiceLoader.load(ICDCodeConverter.class);
+            Iterator<ICDCodeConverter> iterator = loader.iterator();
+            while (iterator.hasNext()) {
+                ICDCodeConverter converter = iterator.next();
+                if (converter.getFromVersion() == ICDVersion.ICD11 && converter.getToVersion() == version) {
+                    return converter.convert(ICD11Code);
+                }
+            }
+        }
+        throw new ProviderNotFoundException("Unsupported ICD version: " + version.toString());
     }
 
     @Override
