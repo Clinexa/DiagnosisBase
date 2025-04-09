@@ -46,4 +46,12 @@ public enum ICDLanguage {
     public String getCode() {
         return code;
     }
+
+    public static ICDLanguage getByCode(String code) {
+        for (ICDLanguage language : ICDLanguage.values()) {
+            if (code.equalsIgnoreCase(language.getCode()))
+                return language;
+        }
+        throw new EnumConstantNotPresentException(ICDLanguage.class, code);
+    }
 }
