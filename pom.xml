@@ -8,7 +8,7 @@
     <artifactId>DiagnosisBase</artifactId>
     <name>Clinexa DiagnosisBase</name>
     <description>Basic diagnostic information library for Clinexa</description>
-    <version>0.1-DEV.1</version>
+    <version>0.1-DEV.2</version>
     <packaging>jar</packaging>
 
     <licenses>
