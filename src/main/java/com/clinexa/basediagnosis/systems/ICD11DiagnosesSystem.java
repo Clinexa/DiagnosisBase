@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 
-public class ICD11DiagnosesSystem implements DiagnosesSystem {
+public final class ICD11DiagnosesSystem implements DiagnosesSystem {
 
     private ICDLanguage language = ICDLanguage.ENGLISH;
 
