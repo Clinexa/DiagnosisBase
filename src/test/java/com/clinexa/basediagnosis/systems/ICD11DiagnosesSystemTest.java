@@ -1,11 +1,9 @@
 package com.clinexa.basediagnosis.systems;
 
 
-import com.clinexa.basediagnosis.DiagnosesSystem;
-import com.clinexa.basediagnosis.Diagnosis;
-import com.clinexa.basediagnosis.DiagnosisCategory;
-import com.clinexa.basediagnosis.Symptom;
+import com.clinexa.basediagnosis.*;
 import com.clinexa.basediagnosis.systems.misc.DataForToken;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.opentest4j.TestAbortedException;
@@ -22,7 +20,7 @@ class ICD11DiagnosesSystemTest {
 
     @BeforeEach
     void setUp() throws Exception{
-        system = new ICD11DiagnosesSystem();
+        system = ICD11DiagnosesSystem.getInstance();
         DataForToken dataForToken;
         try {
             dataForToken = TestTokenManager.getDataForToken();
@@ -52,6 +50,16 @@ class ICD11DiagnosesSystemTest {
         Diagnosis diagnosis = (Diagnosis) diagnosisObj;
         assertEquals(CODE1, diagnosis.getICD11Code());
         assertEquals("Gastroenteritis or colitis without specification of origin", diagnosis.getTitle());
+    }
+
+    @Test
+    void getByICD11CodeDiagnosisRussian() {
+        String CODE1 = "1A40.0";
+        Object diagnosisObj = system.getByICD11Code(CODE1, ICDLanguage.RUSSIAN);
+        assertInstanceOf(Diagnosis.class, diagnosisObj);
+        Diagnosis diagnosis = (Diagnosis) diagnosisObj;
+        assertEquals(CODE1, diagnosis.getICD11Code());
+        assertEquals("Гастроэнтерит или колит неуточненного происхождения", diagnosis.getTitle());
     }
 
     @Test
@@ -92,6 +100,20 @@ class ICD11DiagnosesSystemTest {
 
         assertFalse(result.isEmpty());
         testAllCorrectClasses(result);
+    }
+
+    @Test
+    void testGetTitleByEntityId() {
+        Titled test = system.getTitleByEntityID("30738976");
+
+        assertEquals("Viral intestinal infections", test.getTitle(ICDLanguage.ENGLISH));
+    }
+
+    @Test
+    void testGetDiagnosisInAnotherLanguage() {
+        Diagnosis diagnosis = (Diagnosis) system.getByICD11Code("1A40.0");
+
+        assertEquals("Гастроэнтерит или колит неуточненного происхождения", diagnosis.getTitle(ICDLanguage.RUSSIAN));
     }
 
     void testAllTheSame(String category, Class<?> classType) {
