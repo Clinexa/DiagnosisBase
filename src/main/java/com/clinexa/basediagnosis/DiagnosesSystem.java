@@ -24,7 +24,7 @@ import java.util.Map;
 public interface DiagnosesSystem {
 
     static DiagnosesSystem getDefaultDiagnosesSystem() {
-        return new ICD11DiagnosesSystem();
+        return ICD11DiagnosesSystem.getInstance();
     }
 
     void setLanguage(ICDLanguage language);

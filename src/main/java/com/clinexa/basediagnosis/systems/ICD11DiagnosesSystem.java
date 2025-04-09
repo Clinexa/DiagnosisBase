@@ -53,6 +53,13 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         CATEGORY
     }
 
+    private final static DiagnosesSystem instance = new ICD11DiagnosesSystem();
+
+    public static DiagnosesSystem getInstance() {
+        return instance;
+    }
+
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
     public ICD11DiagnosesSystem() {
         data = new HashMap<String, String>();
         try {
