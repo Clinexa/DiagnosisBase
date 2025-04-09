@@ -129,7 +129,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             String entityID = response.getString("stemId");
             entityID = entityID.substring(entityID.indexOf("mms") + 4);
             JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), language);
-            return createPairByResponse(codeResponse, entityID).getKey();
+            return createPairByResponse(codeResponse, entityID, language).getKey();
         } catch (URISyntaxException e) {
             throw new DiagnosesSystemException(e);
         }
@@ -167,7 +167,7 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                 String entityID = destinationEntity.getString("stemId");
                 entityID = entityID.substring(entityID.indexOf("mms") + 4);
                 JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), language);
-                subcategories.add(createPairByResponse(destinationEntityResponse, entityID));
+                subcategories.add(createPairByResponse(destinationEntityResponse, entityID, language));
             }
             return subcategories;
         } catch (URISyntaxException e) {
@@ -220,14 +220,14 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
         String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
         JSONObject childResponse = getAPIResponse(URI.create(childQuery), language);
-        return createPairByResponse(childResponse, childEntity);
+        return createPairByResponse(childResponse, childEntity, language);
     }
 
-    private Map.Entry<Object, String> createPairByResponse(JSONObject childResponse, String childEntity) {
+    private Map.Entry<Object, String> createPairByResponse(JSONObject childResponse, String childEntity, ICDLanguage language) {
         Object object = switch (getObjectType(childResponse)) {
-            case CATEGORY -> new DiagnosisCategory(getTitle(childResponse), childEntity);
-            case DIAGNOSIS -> new Diagnosis(childResponse.getString("code"), getTitle(childResponse));
-            case SYMPTOM -> new Symptom(childResponse.getString("code"), getTitle(childResponse));
+            case CATEGORY -> new DiagnosisCategory(getTitle(childResponse), childEntity, language, this);
+            case DIAGNOSIS -> new Diagnosis(this, language, childResponse.getString("code"), getTitle(childResponse));
+            case SYMPTOM -> new Symptom(this, language, childResponse.getString("code"), getTitle(childResponse));
             default -> throw new UnsupportedOperationException("Unsupported category: " + childEntity);
         };
         return new AbstractMap.SimpleEntry<>(object, childEntity);
