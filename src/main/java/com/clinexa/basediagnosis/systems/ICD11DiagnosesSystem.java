@@ -29,6 +29,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
 public class ICD11DiagnosesSystem implements DiagnosesSystem {
@@ -36,6 +37,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
     private ICDLanguage language = ICDLanguage.ENGLISH;
 
     private Map<String, String> data;
+
+    private static final int REQUEST_TIMEOUT = 10;
 
     public static final String CLIENT_ID_KEY = "CLIEND_ID";
     public static final String CLIENT_SECRET_KEY = "CLIENT_SECRET";
@@ -98,6 +101,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                         "&grant_type=" + URLEncoder.encode(GRANT_TYPE, StandardCharsets.UTF_8);
         builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters, StandardCharsets.UTF_8));
         builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+        builder.timeout(Duration.ofSeconds(REQUEST_TIMEOUT));
 
         HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != HttpURLConnection.HTTP_OK)
@@ -269,6 +274,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 builder.setHeader(header.getKey(), header.getValue());
             }
+
+            builder.timeout(Duration.ofSeconds(REQUEST_TIMEOUT));
 
             HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == HttpsURLConnection.HTTP_NOT_FOUND)
