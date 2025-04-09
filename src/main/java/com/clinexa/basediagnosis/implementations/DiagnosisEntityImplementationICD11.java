@@ -47,9 +47,7 @@ public abstract class DiagnosisEntityImplementationICD11 extends TitledImplement
             return ICD11Code;
         } else {
             ServiceLoader<ICDCodeConverter> loader = ServiceLoader.load(ICDCodeConverter.class);
-            Iterator<ICDCodeConverter> iterator = loader.iterator();
-            while (iterator.hasNext()) {
-                ICDCodeConverter converter = iterator.next();
+            for (ICDCodeConverter converter : loader) {
                 if (converter.getFromVersion() == ICDVersion.ICD11 && converter.getToVersion() == version) {
                     return converter.convert(ICD11Code);
                 }
