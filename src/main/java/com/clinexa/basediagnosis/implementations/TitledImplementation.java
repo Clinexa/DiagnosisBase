@@ -22,4 +22,9 @@ public class TitledImplementation implements Titled {
         else
             return anotherLanguageGetter.getInAnotherLanguage(language);
     }
+
+    @Override
+    public String getTitle() {
+        return getTitle(ICDLanguage.ENGLISH);
+    }
 }
