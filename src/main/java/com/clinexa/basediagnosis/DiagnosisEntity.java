@@ -15,10 +15,31 @@
 
 package com.clinexa.basediagnosis;
 
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Common interface for a diagnosis and a symptom.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ */
 public interface DiagnosisEntity extends Titled {
 
-    String getICDCode(ICDVersion version);
-    default String getICD11Code() {
+    /**
+     * Returns ICD code of this entity,
+     *
+     * @param version version of ICD
+     * @return ICD code for given version.
+     * @implNote throw exception if version is not supported.
+     */
+    @NotNull String getICDCode(@NotNull ICDVersion version);
+
+    /**
+     * Returns ICD 11 code of this entity.
+     *
+     * @return ICD 11 code.
+     */
+    default @NotNull String getICD11Code() {
         return getICDCode(ICDVersion.ICD11);
     }
 }

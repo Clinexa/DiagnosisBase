@@ -59,7 +59,7 @@ class ICD11DiagnosesSystemTest {
         assertInstanceOf(Diagnosis.class, diagnosisObj);
         Diagnosis diagnosis = (Diagnosis) diagnosisObj;
         assertEquals(CODE1, diagnosis.getICD11Code());
-        assertEquals("Гастроэнтерит или колит неуточненного происхождения", diagnosis.getTitle());
+        assertEquals("Гастроэнтерит или колит неуточненного происхождения", diagnosis.getTitle(ICDLanguage.RUSSIAN));
     }
 
     @Test
@@ -68,7 +68,7 @@ class ICD11DiagnosesSystemTest {
         Object categoryObj = system.getByICD11Code(CODE1);
         assertInstanceOf(DiagnosisCategory.class, categoryObj);
         DiagnosisCategory category = (DiagnosisCategory) categoryObj;
-        assertEquals("Gastroenteritis or colitis without specification of infectious agent", category.getName());
+        assertEquals("Gastroenteritis or colitis without specification of infectious agent", category.getTitle(ICDLanguage.ENGLISH));
     }
 
     @Test

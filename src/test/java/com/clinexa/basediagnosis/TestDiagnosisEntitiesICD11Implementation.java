@@ -1,8 +1,7 @@
-package com.clinexa.basediagnosis.systems;
+package com.clinexa.basediagnosis;
 
-import com.clinexa.basediagnosis.DiagnosesSystem;
-import com.clinexa.basediagnosis.Diagnosis;
-import com.clinexa.basediagnosis.Symptom;
+import com.clinexa.basediagnosis.systems.ICD11DiagnosesSystem;
+import com.clinexa.basediagnosis.systems.TestTokenManager;
 import com.clinexa.basediagnosis.systems.misc.DataForToken;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 import org.junit.jupiter.api.BeforeEach;

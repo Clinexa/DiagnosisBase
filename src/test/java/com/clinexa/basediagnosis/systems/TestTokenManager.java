@@ -20,7 +20,7 @@ public class TestTokenManager {
         }
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter client ID: ");
         String clientID = scanner.nextLine();

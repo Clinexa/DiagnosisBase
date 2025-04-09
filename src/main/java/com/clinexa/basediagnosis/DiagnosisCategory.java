@@ -17,26 +17,64 @@ package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.implementations.TitledImplementation;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Stores data about diagnosis category.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ */
 public class DiagnosisCategory extends TitledImplementation {
 
-    private String systemCode;
+    private final String systemCode;
 
-    public DiagnosisCategory(String name, String systemCode, ICDLanguage language, DiagnosesSystem system) {
+    /**
+     * Creates new diagnosis category.
+     *
+     * @param system system that was used to generate entity. Will be used for translations.
+     * @param language language of the given title.
+     * @param systemCode ID of the entity.
+     * @param name title of the entity in the given language.
+     * @since 0.1-dev.2
+     */
+    public DiagnosisCategory(@NotNull String name, String systemCode, @NotNull ICDLanguage language,
+                             @NotNull DiagnosesSystem system) {
         super(name, language, (var lang) -> system.getTitleByEntityID(systemCode, lang).getTitle(lang));
         this.systemCode = systemCode;
     }
 
+    /**
+     * Old (from 0.1-dev.1) version of the constructor that uses ENGLISH as
+     * default language and default diagnoses system (see {@link DiagnosesSystem#getDefaultDiagnosesSystem()}).
+     *
+     * @param systemCode ID of the entity.
+     * @param name title of the entity in English.
+     * @deprecated use four-variable constructor instead to specify used language.
+     * @see #DiagnosisCategory(String, String, ICDLanguage, DiagnosesSystem)
+     */
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
-    public DiagnosisCategory(String name, String systemCode) {
+    public DiagnosisCategory(@NotNull String name, String systemCode) {
         this(name, systemCode, ICDLanguage.ENGLISH, DiagnosesSystem.getDefaultDiagnosesSystem());
     }
 
+    /**
+     * Returns the title of the category.
+     *
+     * @deprecated use {@link Titled#getTitle(ICDLanguage)} instead.
+     * @return title of the category.
+     */
     @Deprecated(since = "0.1-dev.2", forRemoval = true)
-    public String getName() {
+    public @NotNull String getName() {
         return getTitle(language);
     }
 
+    /**
+     * Returns entity ID of this category.
+     *
+     * @return entity ID.
+     */
+    @SuppressWarnings("unused")
     public String getSystemCode() {
         return systemCode;
     }

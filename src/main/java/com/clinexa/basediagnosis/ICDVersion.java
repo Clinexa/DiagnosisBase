@@ -16,6 +16,12 @@
 
 package com.clinexa.basediagnosis;
 
+/**
+ * Enum with known (but not for sure supported) ICD versions.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ */
 public enum ICDVersion {
     ICD10,
     ICD10CM,
