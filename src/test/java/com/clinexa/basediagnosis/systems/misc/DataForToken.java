@@ -10,6 +10,7 @@ public final class DataForToken implements Serializable {
 
     public DataForToken() {}
 
+    @SuppressWarnings("unused")
     public DataForToken(String clientID, String clientSecret) {
         ClientID = clientID;
         ClientSecret = clientSecret;

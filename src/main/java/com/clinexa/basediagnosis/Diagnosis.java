@@ -16,16 +16,81 @@
 package com.clinexa.basediagnosis;
 
 import com.clinexa.basediagnosis.implementations.DiagnosisEntityImplementationICD11;
+import com.clinexa.basediagnosis.services.SymptomSupplier;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
+import org.jetbrains.annotations.NotNull;
 
+import java.nio.file.ProviderNotFoundException;
 import java.util.List;
+import java.util.ServiceLoader;
 
+/**
+ * Stores diagnosis information.
+ * <br>
+ *
+ * Most of the behavior is defined by {@link DiagnosisEntityImplementationICD11}.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ */
+@SuppressWarnings("removal")
 public class Diagnosis extends DiagnosisEntityImplementationICD11 {
-    public Diagnosis(String ICD11Code, String title) {
+    /**
+     * Creates new object of Diagnosis.
+     *
+     * @param system system that was used to generate entity. Will be used for translations.
+     * @param language language of the given title.
+     * @param ICD11Code ICD 11 code of the entity.
+     * @param title title of the entity in the given language.
+     * @since 0.1-dev.2
+     */
+    public Diagnosis(@NotNull DiagnosesSystem system, @NotNull ICDLanguage language, @NotNull String ICD11Code, @NotNull String title) {
+        super(system, language, ICD11Code, title);
+    }
+
+    /**
+     * Default constructor for serialization. DO NOT USE IT!
+     *
+     * @deprecated Do not use besides serialization!
+     * @since 0.1-dev.2
+     */
+    public Diagnosis() {
+        super();
+    }
+
+    /**
+     * Old (from 0.1-dev.1) version of the constructor that uses ENGLISH as
+     * default language and default diagnoses system (see {@link DiagnosesSystem#getDefaultDiagnosesSystem()}).
+     *
+     * @param ICD11Code ICD 11 code of the entity.
+     * @param title title of the entity in English.
+     * @deprecated use four-variable constructor instead to specify used language.
+     * @see #Diagnosis(DiagnosesSystem, ICDLanguage, String, String)
+     */
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
+    public Diagnosis(@NotNull String ICD11Code, @NotNull String title) {
         super(ICD11Code, title);
     }
 
-    public List<Symptom> getSymptoms() {
-        throw new UnsupportedOperationException("Not supported yet with ICD 11 as the only database");
-        // TODO: Loader where modules can save symptomps per diagnosis
+    /**
+     * Searches for service provider that gives symptoms by
+     * diagnosis and returns its data.
+     * <br>
+     *
+     * If several providers give symptoms for this diagnosis, the
+     * behavior is undefined.
+     *
+     * @return list of symptoms of this diagnosis.
+     * @throws ProviderNotFoundException if no provider gives symptoms for this diagnosis.
+     * @see SymptomSupplier
+     */
+    @SuppressWarnings("unused")
+    public @NotNull List<Symptom> getSymptoms() {
+        ServiceLoader<SymptomSupplier> loader = ServiceLoader.load(SymptomSupplier.class);
+        for (SymptomSupplier symptomSupplier : loader) {
+            if (symptomSupplier.canProcess(this))
+                return symptomSupplier.process(this);
+        }
+        throw new ProviderNotFoundException("No symptom provider for diagnosis: " + this);
     }
 }

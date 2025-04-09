@@ -13,9 +13,15 @@
  * License along with Clinexa DiagnosisBase. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.clinexa.basediagnosis.systems;
+package com.clinexa.basediagnosis.utils;
 
-public enum ICD11Language {
+/**
+ * Languages supported by the ICD 11 system.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ */
+public enum ICDLanguage {
     ARABIC("ar"),
     CHINESE("zh"),
     CZECH("cs"),
@@ -32,10 +38,15 @@ public enum ICD11Language {
 
     private final String code;
 
-    private ICD11Language(String code) {
+    ICDLanguage(String code) {
         this.code = code;
     }
 
+    /**
+     * Returns String description of the object.
+     *
+     * @return String description of the object
+     */
     @Override
     public String toString() {
         return "ICD11Language{" +
@@ -43,7 +54,29 @@ public enum ICD11Language {
                 '}';
     }
 
+    /**
+     * Returns ISO 639 codes for the language.
+     *
+     * @return code of the language.
+     * @see <a href="https://www.iso.org/iso-639-language-code">ISO 639</a>
+     */
     public String getCode() {
         return code;
+    }
+
+    /**
+     * Gets an enum value for the given ISO 638 code.
+     *
+     * @param code code to search for.
+     * @return ICDLanguage enum value for the given code.
+     * @throws EnumConstantNotPresentException if no value is associated with the code.
+     */
+    @SuppressWarnings("unused")
+    public static ICDLanguage getByCode(String code) {
+        for (ICDLanguage language : ICDLanguage.values()) {
+            if (code.equalsIgnoreCase(language.getCode()))
+                return language;
+        }
+        throw new EnumConstantNotPresentException(ICDLanguage.class, code);
     }
 }

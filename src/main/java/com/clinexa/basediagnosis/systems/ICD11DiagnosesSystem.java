@@ -17,6 +17,9 @@ package com.clinexa.basediagnosis.systems;
 
 import com.clinexa.basediagnosis.*;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
+import com.clinexa.basediagnosis.implementations.TitledImplementation;
+import com.clinexa.basediagnosis.utils.ICDLanguage;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,17 +30,40 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
-public class ICD11DiagnosesSystem implements DiagnosesSystem {
+/**
+ * ICD 11-based symptoms and diagnoses management system.
+ * <br>
+ *
+ * Can be used to get subcategories of ICD 11, their subcategories, diagnoses
+ * and symptoms in them, get information by ICD 11 code etc.
+ *
+ * @since 0.1-dev.1
+ * @author Nikita S.
+ * @see DiagnosesSystem
+ */
+public final class ICD11DiagnosesSystem implements DiagnosesSystem {
 
-    private Map<String, String> data;
+    private ICDLanguage language = ICDLanguage.ENGLISH;
 
+    private final Map<String, String> data;
+
+    private static final int REQUEST_TIMEOUT = 10;
+
+    /**
+     * Key that should be passed to {@link #setParameter(String, String)} to set ICD 11 API's client id
+     */
     public static final String CLIENT_ID_KEY = "CLIEND_ID";
+    /**
+     * Key that should be passed to {@link #setParameter(String, String)} to set ICD 11 API's client secret
+     */
     public static final String CLIENT_SECRET_KEY = "CLIENT_SECRET";
 
     private final String CLIENT_TOKEN_KEY = "CLIENT_TOKEN";
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final String API_URL_STRING = "https://id.who.int/icd/";
     private final URI API_URI;
 
@@ -49,26 +75,66 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         CATEGORY
     }
 
-    public ICD11DiagnosesSystem() {
-        data = new HashMap<String, String>();
-        try {
-            API_URI = new URI(API_URL_STRING);
-        } catch (Exception e) {
-            throw new DiagnosesSystemException(e);
-        }
+    private final static DiagnosesSystem instance = new ICD11DiagnosesSystem();
+
+    /**
+     * Returns the only instance of ICD 11 diagnoses system.
+     * <br>
+     *
+     * Before working with system, ICD 11 API keys should be set (see
+     * {@link #CLIENT_ID_KEY} and {@link #CLIENT_SECRET_KEY}) and
+     * {@link #init()} method should be called.
+     *
+     * @return instance of ICD11DiagnosesSystem.
+     * @since 1.0-dev.2
+     * @see <a href="https://en.wikipedia.org/wiki/Singleton_pattern">Singleton pattern</a>
+     */
+    public static @NotNull DiagnosesSystem getInstance() {
+        return instance;
     }
 
+    /**
+     * Creates an empty instance of ICD 11 diagnoses system.
+     *
+     * @deprecated Use {@link #getInstance()}. Using default constructor brakes translations.
+     *             Will be made private later.
+     */
+    @SuppressWarnings("DeprecatedIsStillUsed")
+    @Deprecated(since = "0.1-dev.2", forRemoval = true)
+    public ICD11DiagnosesSystem() {
+        data = new HashMap<>();
+        API_URI = formURI(API_URL_STRING);
+    }
+
+    /**
+     * Initializes class before usage.
+     * <br>
+     *
+     * ICD 11 API's client id and secret must be given using {@link #setParameter(String, String)}
+     * before calling this method.
+     *
+     * @see #CLIENT_ID_KEY
+     * @see #CLIENT_SECRET_KEY
+     */
     @Override
     public void init() {
-        try (var client = HttpClient.newHttpClient();) {
+        try (var client = HttpClient.newHttpClient()) {
             initToken(client);
-            initRelease();
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+            initRelease(language);
+        } catch (IOException | InterruptedException e) {
             throw new DiagnosesSystemException(e);
         }
     }
 
-    private void initToken(HttpClient client) throws IOException, InterruptedException {
+    /**
+     * Gets token from ICD 11 API server and saves is under {@link #CLIENT_TOKEN_KEY}
+     * in data.
+     *
+     * @param client initialized {@link HttpClient}.
+     * @throws IOException if there's a problem with internet connection.
+     * @throws InterruptedException if connection was interrupted.
+     */
+    private void initToken(@NotNull HttpClient client) throws IOException, InterruptedException {
         if (!data.containsKey(CLIENT_ID_KEY) && !data.containsKey(CLIENT_SECRET_KEY))
             throw new DiagnosesSystemException("Information for WHO authentication was not given. Set " +
                     "ICD11DiagnosesSystem.CLIENT_ID_KEY and .CLIENT_ID_KEY using setParameter() method!");
@@ -88,6 +154,8 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         builder.POST(HttpRequest.BodyPublishers.ofString(urlParameters, StandardCharsets.UTF_8));
         builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
+        builder.timeout(Duration.ofSeconds(REQUEST_TIMEOUT));
+
         HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != HttpURLConnection.HTTP_OK)
             throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
@@ -98,98 +166,285 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         setParameter(CLIENT_TOKEN_KEY, responseObj.getString("access_token"));
     }
 
-    private void initRelease() throws URISyntaxException {
-        JSONObject releaseResponse = getAPIResponse(new URI("release/11/mms"), ICD11Language.ENGLISH);
+    /**
+     * Gets actual release of ICD 11 from API and saves it in data
+     * under {@link #LATEST_RELEASE_NAME_KEY}.
+     *
+     * @param language language to set during request. Shouldn't change anything.
+     */
+    private void initRelease(@NotNull ICDLanguage language) {
+        JSONObject releaseResponse = getAPIResponse(formURI("release/11/mms"), language);
         if (!releaseResponse.has("latestRelease"))
             throw new DiagnosesSystemException("Response doesn't contain latest release: " + releaseResponse);
         String releaseName = releaseResponse.getString("latestRelease").replace("http://id.who.int/icd/release/11/", "").replace("/mms", "");
         setParameter(LATEST_RELEASE_NAME_KEY, releaseName);
     }
 
+    /**
+     * Returns {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} object
+     * for a given ICD 11 code.
+     *
+     * @param icd11Code ICD 11 code
+     * @param language language to be used as default in returned object.
+     * @return {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} object for a given ICD 11 code.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getByICD11Code(String, ICDLanguage)
+     */
     @Override
-    public Object getByICD11Code(String icd11Code) {
-        try {
-            JSONObject response = getAPIResponse(new URI(formQuery("") + "/codeinfo/" + icd11Code), ICD11Language.ENGLISH);
-            String entityID = response.getString("stemId");
-            entityID = entityID.substring(entityID.indexOf("mms") + 4);
-            JSONObject codeResponse = getAPIResponse(new URI(formQuery(entityID)), ICD11Language.ENGLISH);
-            return createPairByResponse(codeResponse, entityID).getKey();
-        } catch (URISyntaxException e) {
-            throw new DiagnosesSystemException(e);
-        }
+    public @NotNull Object getByICD11Code(@NotNull String icd11Code, @NotNull ICDLanguage language) {
+        JSONObject response = getAPIResponse(formURI(formQuery("") + "/codeinfo/" + icd11Code), language);
+        String entityID = response.getString("stemId");
+        entityID = entityID.substring(entityID.indexOf("mms") + 4);
+        JSONObject codeResponse = getAPIResponse(formURI(formQuery(entityID)), language);
+        return createPairByResponse(codeResponse, entityID, language).getKey();
     }
 
+    /**
+     * Returns main categories of ICD 11.
+     *
+     * @param language default language of the results.
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects of main subcategories.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getParentCategoryListing(ICDLanguage)
+     */
     @Override
-    public List<Map.Entry<Object, String>> getParentCategoryListing() {
-        return getCategoryListing("");
+    public @NotNull List<Map.Entry<Object, String>> getParentCategoryListing(@NotNull  ICDLanguage language) {
+        return getCategoryListing("", language);
     }
 
+    /**
+     * Returns elements of the category in ICD 11.
+     *
+     * @param category ID of category to check.
+     * @param language default language of the results.
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects form the category.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getCategoryListing(String, ICDLanguage)
+     */
     @Override
-    public List<Map.Entry<Object, String>> getCategoryListing(String category) {
-        JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), ICD11Language.ENGLISH);
+    public @NotNull List<Map.Entry<Object, String>> getCategoryListing(@NotNull String category, @NotNull ICDLanguage language) {
+        JSONObject apiResponse = getAPIResponse(URI.create(formQuery(category)), language);
         if (!apiResponse.has("child"))
             throw new DiagnosesSystemException("Given entity is not a category: " + category);
         JSONArray children = apiResponse.getJSONArray("child");
 
         List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
         for (Object childURI : children) {
-            subcategories.add(processChild((String) childURI));
+            subcategories.add(processChild((String) childURI, language));
         }
         return subcategories;
     }
 
+    /**
+     * Returns search results for the given input query.
+     *
+     * @param query query to search.
+     * @param language default language of the results.
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects for the given query.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getSearchResult(String, ICDLanguage)
+     */
     @Override
-    public List<Map.Entry<Object, String>> getSearchResult(String query) {
-        try {
-            String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
-            JSONObject response = getAPIResponse(new URI(queryForURI), ICD11Language.ENGLISH);
-            JSONArray responsesArray = response.getJSONArray("destinationEntities");
+    public @NotNull List<Map.Entry<Object, String>> getSearchResult(@NotNull String query, @NotNull ICDLanguage language) {
+        String queryForURI = formQuery("search?q=" + URLEncoder.encode(query, StandardCharsets.UTF_8));
+        JSONObject response = getAPIResponse(formURI(queryForURI), language);
+        JSONArray responsesArray = response.getJSONArray("destinationEntities");
 
-            List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
-            for (Object obj : responsesArray) {
-                JSONObject destinationEntity = (JSONObject) obj;
-                String entityID = destinationEntity.getString("stemId");
-                entityID = entityID.substring(entityID.indexOf("mms") + 4);
-                JSONObject destinationEntityResponse = getAPIResponse(new URI(formQuery(entityID)), ICD11Language.ENGLISH);
-                subcategories.add(createPairByResponse(destinationEntityResponse, entityID));
-            }
-            return subcategories;
-        } catch (URISyntaxException e) {
-            throw new DiagnosesSystemException(e);
+        List<Map.Entry<Object, String>> subcategories = new ArrayList<>();
+        for (Object obj : responsesArray) {
+            JSONObject destinationEntity = (JSONObject) obj;
+            String entityID = destinationEntity.getString("stemId");
+            entityID = entityID.substring(entityID.indexOf("mms") + 4);
+            JSONObject destinationEntityResponse = getAPIResponse(formURI(formQuery(entityID)), language);
+            subcategories.add(createPairByResponse(destinationEntityResponse, entityID, language));
         }
+        return subcategories;
     }
 
-    private Map.Entry<Object, String> processChild(String childURI) {
-        String childEntity = ((String) childURI).replace("http://id.who.int/icd/release/11/2025-01/mms/", "");
+    /**
+     * Returns untranslatable {@link Titled} object with title of
+     * the ICD 11 entity by its ID.
+     *
+     * @param entity ID of the entity to search.
+     * @param language the only language results will be available in.
+     * @return {@link Titled} object with title of entity with given ID.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getTitleByEntityID(String, ICDLanguage)
+     */
+    @Override
+    public @NotNull Titled getTitleByEntityID(@NotNull String entity, @NotNull ICDLanguage language) {
+        JSONObject response = getAPIResponse(formURI(formQuery(entity)), language);
+        String title = response.getJSONObject("title").getString("@value");
+        return new TitledImplementation(title, language, (var _) -> { throw new UnsupportedOperationException("getTitleByEntityID result may asked only in original language");});
+    }
+
+    /**
+     * Returns {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} object
+     * for a given ICD 11 code in set language.
+     *
+     * @param icd11Code ICD 11 code
+     * @return {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} object for a given ICD 11 code.
+     * @see DiagnosesSystem#getByICD11Code(String)
+     */
+    @Override
+    public @NotNull Object getByICD11Code(@NotNull String icd11Code) {
+        return getByICD11Code(icd11Code, language);
+    }
+
+    /**
+     * Returns main categories of ICD 11 in set language.
+     *
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects of main subcategories.
+     * @see DiagnosesSystem#getParentCategoryListing()
+     */
+    @Override
+    public @NotNull List<Map.Entry<Object, String>> getParentCategoryListing() {
+        return getParentCategoryListing(language);
+    }
+
+    /**
+     * Returns elements of the category in ICD 11 for the set language.
+     *
+     * @param category ID of category to check.
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects form the category.
+     * @see DiagnosesSystem#getCategoryListing(String)
+     */
+    @Override
+    public @NotNull List<Map.Entry<Object, String>> getCategoryListing(@NotNull String category) {
+        return getCategoryListing(category, language);
+    }
+
+    /**
+     * Returns search results for the given input query for set language.
+     *
+     * @param query query to search.
+     * @return list of {@link Diagnosis}, {@link Symptom}, or {@link DiagnosisCategory} objects for the given query.
+     * @see DiagnosesSystem#getSearchResult(String)
+     */
+    @Override
+    public @NotNull List<Map.Entry<Object, String>> getSearchResult(@NotNull String query) {
+        return getSearchResult(query, language);
+    }
+
+    /**
+     * Returns untranslatable {@link Titled} object with title of
+     * the ICD 11 entity by its ID for set language.
+     *
+     * @param entity ID of the entity to search.
+     * @return {@link Titled} object with title of entity with given ID.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#getTitleByEntityID(String)
+     */
+    @Override
+    public @NotNull Titled getTitleByEntityID(@NotNull String entity) {
+        return getTitleByEntityID(entity, language);
+    }
+
+    /**
+     * Sets default language.
+     *
+     * @param language language to be set as a one used by default.
+     * @since 0.1-dev.2
+     * @see DiagnosesSystem#setLanguage(ICDLanguage)
+     */
+    @Override
+    public void setLanguage(@NotNull ICDLanguage language) {
+        this.language = language;
+    }
+
+    /**
+     * Process child subcategory during parsing a parent category.
+     *
+     * @param childURI API URI of the child.
+     * @param language language that will be used as default.
+     * @return Map.Entry pair with a corresponding object for a child and a String with its ID.
+     */
+    private @NotNull Map.Entry<Object, String> processChild(@NotNull String childURI, @NotNull ICDLanguage language) {
+        String childEntity = childURI.substring(childURI.indexOf("mms/") + 4);
         String childQuery = "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms/" + childEntity;
-        JSONObject childResponse = getAPIResponse(URI.create(childQuery), ICD11Language.ENGLISH);
-        return createPairByResponse(childResponse, childEntity);
+        JSONObject childResponse = getAPIResponse(URI.create(childQuery), language);
+        return createPairByResponse(childResponse, childEntity, language);
     }
 
-    private Map.Entry<Object, String> createPairByResponse(JSONObject childResponse, String childEntity) {
+    /**
+     * Creates a pair for category child response.
+     *
+     * @param childResponse response from API for category's child
+     * @param childEntity ID of the child.
+     * @param language language to be used.
+     * @return Map.Entry pair with a corresponding object for a child and a String with its ID.
+     * @throws UnsupportedOperationException if type of the child isn't supported by the method.
+     */
+    private @NotNull Map.Entry<Object, String> createPairByResponse(@NotNull JSONObject childResponse,
+                @NotNull String childEntity, @NotNull ICDLanguage language) {
         Object object = switch (getObjectType(childResponse)) {
-            case CATEGORY -> new DiagnosisCategory(getTitle(childResponse), childEntity);
-            case DIAGNOSIS -> new Diagnosis(childResponse.getString("code"), getTitle(childResponse));
-            case SYMPTOM -> new Symptom(childResponse.getString("code"), getTitle(childResponse));
+            case CATEGORY -> new DiagnosisCategory(getTitle(childResponse), childEntity, language, this);
+            case DIAGNOSIS -> new Diagnosis(this, language, childResponse.getString("code"), getTitle(childResponse));
+            case SYMPTOM -> new Symptom(this, language, childResponse.getString("code"), getTitle(childResponse));
+            //noinspection UnnecessaryDefault
             default -> throw new UnsupportedOperationException("Unsupported category: " + childEntity);
         };
         return new AbstractMap.SimpleEntry<>(object, childEntity);
     }
 
-    private String getTitle(JSONObject response) {
+    /**
+     * Returns title of the API response object.
+     *
+     * @param response response from the API.
+     * @return title.@value from response's JSON.
+     */
+    private @NotNull String getTitle(@NotNull JSONObject response) {
         return response.getJSONObject("title").getString("@value");
     }
 
-    private String formQuery(String category) {
+    /**
+     * Forms API query for a given category ID.
+     *
+     * @param category category ID to be used.
+     * @return API query for a given category ID.
+     */
+    private @NotNull String formQuery(@NotNull String category) {
         return "release/11/" + data.get(LATEST_RELEASE_NAME_KEY) + "/mms" + (category.isEmpty() ? "" : "/" + category);
     }
 
+    /**
+     * Sets parameter for system.
+     *
+     * @param key key (usually are available as public static final String constants ending in _KEY).
+     * @param value value to be stored.
+     * @see DiagnosesSystem#setParameter(String, String)
+     */
     @Override
-    public void setParameter(String key, String value) {
+    public void setParameter(@NotNull String key, String value) {
         data.put(key, value);
     }
 
-    private EntityType getObjectType(JSONObject object) {
+    /**
+     * Creates new URI instance without checked exceptions.
+     *
+     * @param query query to be passed to URI constructor.
+     * @return new URI object.
+     * @throws DiagnosesSystemException if {@link URISyntaxException} is thrown.
+     */
+    private @NotNull URI formURI(@NotNull String query) {
+        try {
+            return new URI(query);
+        } catch (URISyntaxException e) {
+            throw new DiagnosesSystemException(e);
+        }
+    }
+
+    /**
+     * Returns object type from response for it.
+     * <br>
+     *
+     * Category has "child" field. Diagnosis has an ICD 11 code. Symptom has an ICD 11 code starting
+     * with 'M'.
+     *
+     * @param object response from API.
+     * @return {@link EntityType} with a type that corresponds to a given response from API.
+     */
+    private @NotNull EntityType getObjectType(@NotNull JSONObject object) {
         if (object.has("child"))
             return EntityType.CATEGORY;
 
@@ -200,11 +455,26 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
         return EntityType.DIAGNOSIS;
     }
 
-    private JSONObject getAPIResponse(URI apiURI, ICD11Language language) {
+    /**
+     * Sends API request with no additional headers.
+     *
+     * @param apiURI URI to send a request to.
+     * @param language language to be set in headers.
+     * @return {@link JSONObject} with response from the API.
+     */
+    private @NotNull JSONObject getAPIResponse(@NotNull URI apiURI, @NotNull ICDLanguage language) {
         return getAPIResponse(apiURI, language, new HashMap<>());
     }
 
-    private JSONObject getAPIResponse(URI apiURI, ICD11Language language, Map<String, String> headers) {
+    /**
+     * Sends API request with additional headers.
+     *
+     * @param apiURI URI to send a request to.
+     * @param language language to be set in headers.
+     * @param headers additional headers for the request.
+     * @return {@link JSONObject} with response from the API.
+     */
+    private @NotNull JSONObject getAPIResponse(@NotNull URI apiURI, @NotNull ICDLanguage language, @NotNull Map<String, String> headers) {
         assert !apiURI.toString().startsWith("/");
         try (var client = HttpClient.newHttpClient()) {
             HttpRequest.Builder builder = HttpRequest.newBuilder();
@@ -218,9 +488,11 @@ public class ICD11DiagnosesSystem implements DiagnosesSystem {
                 builder.setHeader(header.getKey(), header.getValue());
             }
 
+            builder.timeout(Duration.ofSeconds(REQUEST_TIMEOUT));
+
             HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == HttpsURLConnection.HTTP_NOT_FOUND)
-                throw new DiagnosesSystemException("ICD API Not found: " + apiURI.toString());
+                throw new DiagnosesSystemException("ICD API Not found: " + apiURI);
             if (response.statusCode() != HttpURLConnection.HTTP_OK)
                 throw new DiagnosesSystemException("Error response from ICD API: " + response.body());
 

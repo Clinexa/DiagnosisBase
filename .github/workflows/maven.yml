@@ -27,6 +27,9 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
+      env:
+        CLINEXA_CLIENT_ID: ${{ secrets.ICD_CLIENT_ID }}
+        CLINEXA_CLIENT_SECRET: ${{ secrets.ICD_CLIENT_SECRET }}
       run: mvn -B package --file pom.xml
     - name: Publish Test Report
       uses: mikepenz/action-junit-report@v5
