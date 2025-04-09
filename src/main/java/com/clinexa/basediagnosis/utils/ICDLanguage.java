@@ -15,18 +15,35 @@
 
 package com.clinexa.basediagnosis.utils;
 
-public enum DiagnosisLanguage {
-    ARABIC,
-    CHINESE,
-    CZECH,
-    ENGLISH,
-    FRENCH,
-    KAZAKH,
-    PORTUGUESE,
-    RUSSIAN,
-    SLOVAK,
-    SPANISH,
-    SWEDISH,
-    TURKISH,
-    UZBEK
+public enum ICDLanguage {
+    ARABIC("ar"),
+    CHINESE("zh"),
+    CZECH("cs"),
+    ENGLISH("en"),
+    FRENCH("fr"),
+    KAZAKH("kk"),
+    PORTUGUESE("pt"),
+    RUSSIAN("ru"),
+    SLOVAK("sk"),
+    SPANISH("es"),
+    SWEDISH("sv"),
+    TURKISH("tr"),
+    UZBEK("uz");
+
+    private final String code;
+
+    private ICDLanguage(String code) {
+        this.code = code;
+    }
+
+    @Override
+    public String toString() {
+        return "ICD11Language{" +
+                "code='" + code + '\'' +
+                '}';
+    }
+
+    public String getCode() {
+        return code;
+    }
 }
