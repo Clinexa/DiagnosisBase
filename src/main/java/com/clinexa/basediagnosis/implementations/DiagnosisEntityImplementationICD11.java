@@ -4,6 +4,7 @@ import com.clinexa.basediagnosis.DiagnosesSystem;
 import com.clinexa.basediagnosis.DiagnosisEntity;
 import com.clinexa.basediagnosis.ICDVersion;
 import com.clinexa.basediagnosis.Titled;
+import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 import java.io.*;
@@ -68,5 +69,13 @@ public abstract class DiagnosisEntityImplementationICD11 extends TitledImplement
             InvocationTargetException, InstantiationException, IllegalAccessException {
         in.defaultReadObject();
         ICD11Code = (String) in.readObject();
+
+        DiagnosesSystem defaultSystem = DiagnosesSystem.getDefaultDiagnosesSystem();
+        var object = (DiagnosisEntityImplementationICD11) defaultSystem.getByICD11Code(ICD11Code);
+
+        system = defaultSystem;
+        language = object.language;
+        title = object.title;
+        anotherLanguageGetter = object.anotherLanguageGetter;
     }
 }

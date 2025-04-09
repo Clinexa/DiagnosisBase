@@ -5,9 +5,9 @@ import com.clinexa.basediagnosis.utils.ICDLanguage;
 
 public class TitledImplementation implements Titled {
 
-    final protected String title;
-    final protected ICDLanguage language;
-    final private AnotherLanguageGetter anotherLanguageGetter;
+    protected String title;
+    protected ICDLanguage language;
+    protected AnotherLanguageGetter anotherLanguageGetter;
 
     public TitledImplementation(String title, ICDLanguage language, AnotherLanguageGetter anotherLanguageGetter) {
         this.title = title;
