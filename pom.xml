@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.clinexa</groupId>
-    <artifactId>DiagnosisBase</artifactId>
+    <artifactId>basediagnosis</artifactId>
     <name>Clinexa DiagnosisBase</name>
     <description>Basic diagnostic information library for Clinexa</description>
     <version>0.1-DEV.2</version>
@@ -103,4 +103,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub sandsbit Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/sandsbit/DiagnosisBase</url>
+        </repository>
+    </distributionManagement>
 </project>
