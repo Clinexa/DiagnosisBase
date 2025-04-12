@@ -26,4 +26,15 @@ public interface AnotherLanguageGetter {
      */
     @NotNull String getInAnotherLanguage(@NotNull ICDLanguage language);
 
+    /**
+     * Standard implementation to throw an exception.
+     *
+     * @param ignoredLanguage language which is needed in the returned value.
+     * @return nothing.
+     * @throws UnsupportedOperationException always.
+     */
+    static String throwException(@NotNull ICDLanguage ignoredLanguage) {
+        throw new UnsupportedOperationException("Result may be asked only in original language");
+    }
+
 }

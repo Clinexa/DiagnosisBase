@@ -17,6 +17,7 @@ package com.clinexa.basediagnosis.systems;
 
 import com.clinexa.basediagnosis.*;
 import com.clinexa.basediagnosis.exceptions.DiagnosesSystemException;
+import com.clinexa.basediagnosis.implementations.AnotherLanguageGetter;
 import com.clinexa.basediagnosis.implementations.TitledImplementation;
 import com.clinexa.basediagnosis.utils.ICDLanguage;
 import org.jetbrains.annotations.NotNull;
@@ -275,7 +276,7 @@ public final class ICD11DiagnosesSystem implements DiagnosesSystem {
     public @NotNull Titled getTitleByEntityID(@NotNull String entity, @NotNull ICDLanguage language) {
         JSONObject response = getAPIResponse(formURI(formQuery(entity)), language);
         String title = response.getJSONObject("title").getString("@value");
-        return new TitledImplementation(title, language, (var _) -> { throw new UnsupportedOperationException("getTitleByEntityID result may asked only in original language");});
+        return new TitledImplementation(title, language, AnotherLanguageGetter::throwException);
     }
 
     /**
